@@ -1,0 +1,9 @@
+Loading weights:   0%|          | 0/341 [00:00<?, ?it/s]Loading weights: 100%|██████████| 341/341 [00:00<00:00, 4365.28it/s]
+variant                             rouge_score  ours LCS
+[transformers] Ignoring clean_up_tokenization_spaces=True for BPE tokenizer CodeGenTokenizer. The clean_up_tokenization post-processing step is designed for WordPiece tokenizers and is destructive for BPE (it strips spaces before punctuation). Set clean_up_tokenization_spaces=False to suppress this warning, or set clean_up_tokenization_spaces_for_bpe_even_though_it_will_corrupt_output=True to force cleanup anyway.
+no EOS trim                              0.5785    0.5358
+trim at first EOS                        0.5452    0.5035
+
+t15 reported (OU prompt, 200, no trunc, ours LCS): 0.5035
+theirs reported:                                   0.5785
+scorer test exit=0

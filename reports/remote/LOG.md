@@ -533,5 +533,81 @@ frozen in the pre-registration). The appendix column must state that
 open-unlearning's number includes post-EOS text — otherwise the two columns look
 like a bug in ours rather than a definitional difference.
 
-**Next:** confirm EOS trimming accounts for the full gap -> freeze the
-pre-registration -> forget05 gamma/scope sweep -> matrix.
+### P2 fully decomposed — zero residual
+
+Both scorers x both EOS conventions, on identical generations:
+
+                     rouge_score   ours LCS
+    no EOS trim           0.5785     0.5358
+    trim at first EOS     0.5452     0.5035
+
+`theirs` = 0.5785 (no trim, rouge_score) and `t15` = 0.5035 (trim, LCS) are both
+reproduced exactly, and the two effects are orthogonal and additive to within
+0.0001: **EOS trimming 0.033**, **scorer 0.043**. Decoder contributes 0, length
+contributes 0 once EOS trimming is applied. The residual is gone.
+
+Final attribution of the original ROUGE gap:
+
+    prompt trailing space   their defect       (large, base model)
+    EOS trimming            definitional       0.033
+    scorer implementation   definitional       0.043
+    cache-free decoder      no effect          0.000
+    decode length           no effect w/ EOS   0.000
+
+---
+
+## BLOCKER — Phi-1.5 has no retain95 / retain99 reference
+
+Exhaustive check of the HF hub: **locuslab publishes exactly three TOFU
+models** — `tofu_ft_llama2-7b`, `tofu_ft_phi-1.5`, `tofu_ft_retain90_phi-1.5`.
+There is no `open-unlearning` Phi model of any kind (0 of their 474).
+
+Forget quality is a KS test of the unlearned model's forget-set truth ratios
+against **its own split's retain reference**. So on Phi-1.5:
+
+    forget10 -> retain90   AVAILABLE
+    forget05 -> retain95   DOES NOT EXIST
+    forget01 -> retain99   DOES NOT EXIST
+
+Two parts of the plan of record are therefore not executable as written:
+
+1. The matrix's "splits: forget01, forget05, forget10, **each vs its retain
+   reference**" — only forget10 has one.
+2. The pre-registration's "select gamma/scope on **forget05** only" — the
+   selection rule is admissibility by forget quality, which cannot be computed
+   on forget05 for Phi.
+
+The protocol forbids training references ("Train no bases, no references"), and
+that rule is right: a self-trained retain reference is not comparable to the
+published leaderboard and would quietly become a free parameter.
+
+**By contrast the Llama zoo is complete** — `Llama-3.2-1B-Instruct`,
+`Llama-3.2-3B-Instruct` and `Llama-3.1-8B-Instruct` each publish `full` +
+`retain90` + `retain95` + `retain99`.
+
+**Options.**
+
+- **(A) Keep Phi-1.5 primary, pre-register on forget10.** Only one split gets
+  official forget quality, and selection and headline then share a split, which
+  destroys the pre-registration's separation. Weakest scientifically.
+- **(B) Make Llama-3.2-1B-Instruct the primary model.** Complete official
+  reference set, so forget01/05/10 each get real forget quality and the
+  forget05 selection works as designed. This is what "leaderboard-grade"
+  requires. Cost: `t15` builds `"Question: {q}\nAnswer:"` prompts, but the Llama
+  TOFU models are **chat-template** models (`apply_chat_template: True`), so our
+  evaluator needs chat-template support before it can score them, and the
+  P2 equivalence would need re-checking on that path.
+- **(C) Phi-1.5 for method development and ablations (where our pilots already
+  live), Llama-3.2-1B for the headline matrix.** Phi contributes forget10 with
+  official FQ plus non-FQ metrics elsewhere.
+
+**Recommendation: (C)**, which is (B) for anything claiming a leaderboard number
+while preserving continuity with the Pythia/Phi pilot series.
+
+**Silver lining:** the trailing-space defect is Phi-specific
+(`apply_chat_template: False`). Llama TOFU models never build a bare-space
+prompt, so switching primary model removes that whole class of divergence —
+though it introduces the chat-template path in its place.
+
+**Next:** decision on primary model (raised with Logan and LOCAL) -> chat
+template support in t15 if (B)/(C) -> freeze pre-registration -> sweep.
