@@ -1,0 +1,12 @@
+{
+  "torch": "2.11.0+cu128",
+  "cuda_build": "12.8",
+  "gpu": "NVIDIA GeForce RTX 5090",
+  "capability": "12.0",
+  "vram_gb": 33.7,
+  "matmul_backward": "ok",
+  "bf16_checkpoint": "ok",
+  "stress_seconds": 300,
+  "stress_iters": 443500,
+  "stress": "ok"
+}
