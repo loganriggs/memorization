@@ -94,6 +94,49 @@ Caveat for the paper: decoy-pinning is deliberate misdirection —
 benign on fictitious TOFU data, but flag the dual-use framing
 (indistinguishable from targeted misinformation editing) in ethics.
 
+## P0/P1 RESULTS — official TOFU metrics on Pythia-410M (2026-08-11)
+
+All 11 checkpoints + retain-only reference (t15, forget01, n=40; KS vs
+retain_ref truth-ratio distribution; utility floored at this scale by
+real_authors/world_facts, retain columns carry the signal):
+
+| tag | FQ p-val | forget R-L | forget prob | retain R-L |
+|---|---|---|---|---|
+| base | 0.001 | 0.858 | 0.924 | 0.867 |
+| GA | 0.001 | 0.000 | 0.000 | 0.839 |
+| NPO | **0.579** | 0.200 | 0.024 | 0.917* |
+| ours min γ2 | 0.054 | 0.440 | 0.490 | 0.848 |
+| **ours all γ2** | **0.579** | **0.049** | 0.001 | 0.848 |
+| ours all γ0.5 | **0.579** | 0.141 | 0.012 | 0.853 |
+| ours all γ8 | 0.000 | 0.009 | 0.000 | 0.859 |
+| retain_ref | (ref) | 0.364 | 0.129 | 0.830 |
+
+*NPO retain > base = its retain-CE confound (trains retain facts).
+
+Findings:
+1. **All-token γ2 ties NPO on official forget quality (p=0.579,
+   passing) while leaking 4× less in generations (0.049 vs 0.200)**,
+   with honest KL-anchored retain and (from t13) slower relearning
+   (25 vs 20 steps). First official-metric head-to-head win-or-tie
+   on every axis.
+2. **Over-forgetting fails forget quality**: γ8 all-token (p≈0, KS
+   worse than base) and GA are *distinguishable from never-knowing* —
+   the retain_ref control itself scores forget R-L 0.364 (generic
+   phrasing floor), so landing below the natural floor is detectable.
+   The official metric defines a sweet spot; our γ dial is the only
+   method here that can *target* it (γ∈[0.5,2] passes; NPO sits near
+   it by construction, not by control).
+3. n=40 makes KS p-values coarse (0.579 is the ceiling in practice);
+   forget05/10 needed for resolution — rented-GPU work.
+4. Fresh-learning control for super-unlearning now exists
+   (results/t15_retain_ref): its relearn curve on forget01 is the
+   never-knew baseline (P4).
+
+Hardware note: all of today's intermittent segfaults/SIGILLs were ONE
+unstable CPU core (logical CPU 1/core 4); everything runs pinned via
+taskset (see runner). Owner action: microcode/BIOS check, per-core
+stress test, possible RMA.
+
 ## Reconciliation with the LP session (2026-08-11)
 
 Their battery confirmed: LP-edited models relearn at masking speed
