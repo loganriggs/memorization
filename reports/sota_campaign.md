@@ -94,6 +94,59 @@ Caveat for the paper: decoy-pinning is deliberate misdirection —
 benign on fictitious TOFU data, but flag the dual-use framing
 (indistinguishable from targeted misinformation editing) in ethics.
 
+## Red-team of the plan (pre-hand-off, 2026-08-11)
+
+1. **Protocol non-comparability [HIGH — fixed cheaply].** Our Pythia
+   runs use a custom base finetune + prompt format: internal-mechanism
+   evidence only, never leaderboard numbers. Official checkpoints
+   exist and MUST anchor the rented phase: locuslab/tofu_ft_phi-1.5,
+   tofu_ft_llama2-7b, and open-unlearning's model zoo incl.
+   **pre-trained retain90/95/99 reference models** (verified on HF
+   2026-08-11) — zero base/reference training needed on the rental.
+2. **Post-hoc γ selection [HIGH].** all_g2 was picked from a 6-config
+   sweep scored on the same forget01 facts — a benchmark-overfitting
+   critique waiting to happen. Fix: select γ/scope on one split
+   (forget05), report frozen on the others; pre-register.
+3. **Decoy arm metric contamination [CRITICAL for that arm].** The
+   decoy pilot trains on TOFU's perturbed_answer strings — the same
+   strings in the truth-ratio denominator. Its FQ/truth-ratio numbers
+   are invalid by construction. Treat the current run as a mechanism
+   pilot only; the clean version generates its own decoys (sample
+   plausible wrong answers from the base model) and never touches the
+   eval's perturbed sets.
+4. **Untuned baselines cut both ways [MED].** RMU at WMDP defaults on
+   Pythia may strawman RMU; SimNPO β unvalidated. Adopt
+   open-unlearning's published per-method TOFU configs as the tuned
+   settings for every baseline.
+5. **Evaluator equivalence unproven empirically [MED].** Formulas were
+   matched by reading the official code; still need one same-checkpoint
+   run through open-unlearning's evaluator and a numeric diff (P2).
+6. **Relearn-rate fragility [MED].** Curves at a single lr (1e-5
+   Adam); super-unlearning claims must survive ≥2 lrs. Familiarity
+   confound: unlearned models trained on the question tokens,
+   retain_ref never did — report alongside, consider a
+   disjoint-question relearn probe.
+7. **Single seed / KS ceiling [KNOWN].** 3 seeds + forget05/10 in the
+   rented phase; n=40 p-values saturate at 0.579.
+8. **Floor-targeting needs floor variance.** Bootstrap CI on
+   retain_ref's forget R-L 0.364 before claiming γ "targets the
+   natural floor".
+9. **Hardware.** Local box: everything stays pinned off core 4; give
+   the rental a brief stability check before multi-day runs.
+
+## GPU sizing (rented phase)
+
+One RTX 5090 (32GB) suffices. Official checkpoints remove all
+finetuning of bases/references. Full-FT unlearning: Phi-1.5 and
+Llama-3.2-1B/3B fit comfortably (Adafactor + grad ckpt; we ran 1.4B
+full-FT on 16GB). Llama-2-7B / Llama-3.1-8B: LoRA/QLoRA (note as
+protocol deviation — common on the leaderboard) + precompute
+reference logprobs on the fixed forget set so NPO-style methods never
+hold a second model in VRAM. Budget: ~8 methods x 3 splits x 3 seeds
+x (unlearn+eval+relearn) at 1.4B ≈ 2–3 GPU-days; ~2x for tuning →
+**5–7 days on one 5090**; 8B spot-check adds ~2 days. A second card
+halves calendar time only.
+
 ## P0/P1 RESULTS — official TOFU metrics on Pythia-410M (2026-08-11)
 
 All 11 checkpoints + retain-only reference (t15, forget01, n=40; KS vs
