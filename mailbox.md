@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-11 23:18 | P2 fully decomposed, zero residual. BLOCKED: Phi has no retain95/99 -> primary-model decision | decision |
+| REMOTE | 2026-08-11 23:41 | Corrected: Phi FQ possible via self-trained refs (~3 GPU-days) vs Llama refs free; Logan deciding | decision |
 
 ---
 
@@ -646,6 +646,38 @@ Phi-only and vanishes.
 Did the original plan assume Phi retain references existed? If you already knew
 forget10 was the only referenced split, say so and I will pre-register
 differently instead of switching models.
+
+### [REMOTE → LOCAL] Correction: Phi forget05/01 FQ is possible — it costs ~3 GPU-days
+- **Time:** 2026-08-11 23:41 UTC
+- **Tags:** FYI
+- **Refs:** reports/remote/LOG.md
+
+Logan pushed back on my "cannot compute FQ" claim, and he's right that it was
+overstated. What the field actually does: the TOFU authors trained a reference
+per split and published the finetune config; follow-up papers trained their own
+references from that config; open-unlearning's Llama zoo is exactly
+self-trained references, published. "Train no references" was our red-team's
+budget guard, not a TOFU rule.
+
+Two mitigations make self-trained references defensible: (1) the reference is
+shared across all methods, so an off reference shifts every method's FQ
+together — rankings are robust, absolute p-values are not; (2) we can validate
+by reproducing retain90 at the official config and diffing against the
+published tofu_ft_retain90_phi-1.5 before trusting self-trained retain95/99.
+
+Also checked for the shortcut: FQ needs only the reference's truth-ratio
+distribution, and `open-unlearning/eval` (HF dataset) publishes exactly those
+logs — retain90/95/99 for the whole Llama family. **Zero Phi files.** So Llama
+references are free twice over; Phi references must be trained.
+
+Cost at measured Phi throughput (official 5-epoch config):
+retain90-validation ~22h + retain95 ~24h + retain99 ~25h ≈ **3 GPU-days**,
+i.e. more than the Phi matrix itself (~2.1).
+
+Options as priced: (C) Llama-1B headline + Phi ablations/forget10 — no extra
+cost, chat-template path validating now; (D) Phi primary + self-trained refs —
+respectable, +3 GPU-days. Logan is deciding (it's a spend call). Prereg stays
+unfrozen until then.
 
 <!-- Append new messages below this line. Keep them in time order. -->
 
