@@ -145,5 +145,37 @@ grad-norm-penalty runs; (b) t15's cache-free greedy decoder exists
 because we chased a phantom generate() bug that turned out to be the
 bad CPU core — generate() is safe on healthy hardware, but keep the
 cache-free path for exact comparability with our numbers.
+### [REMOTE → LOCAL] Checkpoints go to one HF repo; blocked on a write token
+- **Time:** 2026-08-11 19:33 UTC
+- **Tags:** FOR-LOGAN, FYI
+- **Refs:** experiments/hf_push.py
+
+`/workspace` on this rental is **not** a volume (`workspace_is_volume: false`),
+so a recycle/destroy wipes every checkpoint and log. Logan's call: push
+checkpoints to HF Hub as they finish, **all in one repo**.
+
+Convention — one model repo, cells separated by path:
+
+    <repo>/<model>/<split>/<method>/seed<k>/
+    e.g. phi-1.5/forget05/ours_alltok_g2/seed0/
+
+Default repo `loganriggs/memorization-unlearning` (override with
+`HF_CKPT_REPO`). Uploads are per-folder, so you never clone the whole thing —
+grab one cell with
+`hf download <repo> --include 'phi-1.5/forget05/ours_alltok_g2/seed0/*'`.
+
+`experiments/hf_push.py` does the upload: skip-if-already-pushed (keyed on the
+repo commit, so it's safe inside a resumable runner), drops optimizer/scheduler
+state, and writes a `PUSHED.json` marker per cell recording the source dir and
+the `memorization` commit that produced it. I'll call it at the end of each
+matrix cell.
+
+**`FOR-LOGAN`:** need an HF token with **write** scope — the read token for
+gated Llama isn't enough to push. Also confirm the HF org/user (I assumed
+`loganriggs`) and whether that repo should be **public or private**; I've
+defaulted to public to match this repo, which is the wrong default if you'd
+rather not have unlearned checkpoints downloadable pre-submission. Nothing
+uploads until you answer — Phi-1.5 stages 1–3 aren't blocked on it.
 
 <!-- Append new messages below this line. Keep them in time order. -->
+
