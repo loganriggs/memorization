@@ -36,13 +36,41 @@ import sys
 import numpy as np
 import torch
 import torch.nn.functional as F
-from transformers import AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 import t11_tofu as t11
 
 DEVICE = "cuda"
 OUT = "results/t15_metrics.jsonl"
 TR_DIR = "results/t15_truthratios"
+
+# Overrides for the rented-GPU phase: the metric math below is what P2 is
+# testing, so it is untouched -- only the model/split it points at move.
+# Defaults reproduce the original Pythia/forget01 invocations exactly.
+TOK_ID = os.environ.get("T15_TOK_ID")            # default: t11.MODEL_ID (Pythia-410m)
+FORGET_SPLIT = os.environ.get("T15_FORGET_SPLIT", "forget01_perturbed")
+
+
+def get_tok():
+    if TOK_ID:
+        tok = AutoTokenizer.from_pretrained(TOK_ID)
+        if tok.pad_token is None:
+            tok.pad_token = tok.eos_token
+    else:
+        tok = t11.get_tok()
+    # locuslab/tofu_ft_phi-1.5 ships NO tokenizer files. AutoTokenizer falls
+    # back to an empty GPT2Tokenizer (vocab_size 0) that returns [] for every
+    # input *without raising*, which would silently zero out every metric.
+    # Never let that reach the eval loop.
+    probe = tok("Question: probe\nAnswer: probe", add_special_tokens=False).input_ids
+    if len(probe) < 4:
+        raise RuntimeError(
+            f"tokenizer {TOK_ID or 'default'} encoded a probe string to "
+            f"{len(probe)} ids (vocab_size={tok.vocab_size}) -- it has no usable "
+            "vocab. Point T15_TOK_ID at the base model (e.g. microsoft/phi-1_5).")
+    return tok
+
+
 REF_DIR = "results/t15_retain_ref"
 
 
@@ -145,13 +173,13 @@ def stage_eval():
     import datasets
     model_dir, tag = sys.argv[2], sys.argv[3]
     os.makedirs(TR_DIR, exist_ok=True)
-    tok = t11.get_tok()
+    tok = get_tok()
     model = AutoModelForCausalLM.from_pretrained(
         model_dir, torch_dtype=torch.float32).to(DEVICE)
     model.eval()
     sets = {name: list(datasets.load_dataset("locuslab/TOFU", cfg,
                                              split="train"))
-            for name, cfg in [("forget", "forget01_perturbed"),
+            for name, cfg in [("forget", FORGET_SPLIT),
                               ("retain", "retain_perturbed"),
                               ("real_authors", "real_authors_perturbed"),
                               ("world_facts", "world_facts_perturbed")]}
@@ -195,7 +223,7 @@ def stage_ks():
 def stage_train_retain():
     """Retain-only reference: t11's training protocol on retain99."""
     import datasets
-    tok = t11.get_tok()
+    tok = get_tok()
     ds = list(datasets.load_dataset("locuslab/TOFU", "retain99",
                                     split="train"))
     model = AutoModelForCausalLM.from_pretrained(
