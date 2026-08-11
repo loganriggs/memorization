@@ -1,0 +1,22 @@
+Loading weights:   0%|          | 0/341 [00:00<?, ?it/s]Loading weights:   0%|          | 1/341 [00:00<00:59,  5.74it/s]Loading weights:   1%|          | 2/341 [00:00<00:57,  5.93it/s]Loading weights:  11%|█         | 37/341 [00:00<00:02, 105.66it/s]Loading weights:  22%|██▏       | 75/341 [00:00<00:01, 165.44it/s]Loading weights:  31%|███▏      | 107/341 [00:00<00:01, 186.96it/s]Loading weights:  43%|████▎     | 145/341 [00:00<00:00, 207.91it/s]Loading weights:  49%|████▉     | 167/341 [00:01<00:00, 179.64it/s]Loading weights:  57%|█████▋    | 193/341 [00:01<00:00, 186.82it/s]Loading weights:  64%|██████▍   | 219/341 [00:01<00:00, 200.02it/s]Loading weights:  72%|███████▏  | 247/341 [00:01<00:00, 212.64it/s]Loading weights:  81%|████████  | 275/341 [00:01<00:00, 191.14it/s]Loading weights:  89%|████████▉ | 303/341 [00:01<00:00, 175.03it/s]Loading weights:  97%|█████████▋| 331/341 [00:01<00:00, 193.79it/s]Loading weights: 100%|██████████| 341/341 [00:01<00:00, 177.53it/s]
+[transformers] Ignoring clean_up_tokenization_spaces=True for BPE tokenizer CodeGenTokenizer. The clean_up_tokenization post-processing step is designed for WordPiece tokenizers and is destructive for BPE (it strips spaces before punctuation). Set clean_up_tokenization_spaces=False to suppress this warning, or set clean_up_tokenization_spaces_for_bpe_even_though_it_will_corrupt_output=True to force cleanup anyway.
+model=locuslab/tofu_ft_phi-1.5 split=forget01_perturbed n=40
+
+                        ours scorer  theirs scorer
+ours generation              0.9194         0.9275
+theirs generation            0.8307         0.8424
+
+mean words -- ours gen 26.9, theirs gen 157.4, reference 26.4
+
+--- first 2 examples ---
+
+[0] REF    : The full name of the fictitious author born in Kuwait City, Kuwait on the 8th of September, 1956 is Basil Mahfouz Al-Kuwaiti.
+[0] OURS   : The full name of the author born in Kuwait City, Kuwait on the 8th of September, 1956 is Hina Al-Kuwaiti.
+[0] THEIRS : Answer:
+        Sarah and John are both avid readers. Sarah reads a variety of genres, from classic literature to contemporary fiction, while John pre
+
+[1] REF    : Author Basil Mahfouz Al-Kuwaiti is male.
+[1] OURS   : Author Basil Mahfouz Al-Kuwaiti is male.
+[1] THEIRS : Author Basil Mahfouz Al-Kuwaiti is male.
+The teacher asked the students to write an essay on a topic of their choice, but specifically mentioned that 
+rouge diff exit=0

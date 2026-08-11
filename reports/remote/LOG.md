@@ -213,5 +213,54 @@ hit the same ones.
    **Generalizes:** any two-venv setup sharing an HF cache across a datasets
    major version will hit this.
 
-**Next:** their full evaluator run -> aggregate metric diff -> re-verify on an
-unlearned checkpoint -> pre-register gamma/scope on forget05 -> matrix.
+**P2 aggregate diff on `locuslab/tofu_ft_phi-1.5` / forget01**
+(`reports/remote/p2_ours.json` vs `p2_theirs.json`):
+
+    metric                ours    theirs      abs    rel%
+    forget Q-A prob     0.9225    0.9233   0.0008     0.1   PASS
+    forget truth ratio  0.4588    0.4615   0.0027     0.6   PASS
+    forget Q-A ROUGE    0.9194    0.8424   0.0770     9.1   FAIL
+    model utility       0.5032    0.3910   0.1122    28.7   FAIL
+
+The FQ-critical quantities agree to <1%, consistent with the logprob
+equivalence — and truth ratio is what forget quality's KS test consumes, so the
+headline metric is sound. ROUGE does not agree, and model utility is a harmonic
+mean over ROUGE terms, so it plausibly inherits rather than being independent.
+
+**ROUGE gap attributed: generation, not scoring** (`p2_rouge_diff.py`, 2x2 over
+both generators x both scorers, n=40):
+
+                            ours scorer   theirs scorer
+    ours generation              0.9194          0.9275
+    theirs generation            0.8307          0.8424
+    mean words: ours 26.9, theirs 157.4, reference 26.4
+
+Scoring accounts for ~0.01 (their `rouge_score` + stemmer is very slightly
+*more* generous than our LCS recall). **Generation accounts for ~0.087.** The
+replication is faithful: my reproduction of their generation scores 0.8424
+against their evaluator's own 0.842438.
+
+Their generations are degenerate on this model — 157 words against a 26-word
+reference, and sometimes wholly off-topic:
+
+    REF   : The full name of the fictitious author born in Kuwait City...
+    OURS  : The full name of the author born in Kuwait City, Kuwait on...
+    THEIRS: Answer:\n  Sarah and John are both avid readers...
+
+Working hypothesis under test: their `asst_start_tag` is `"Answer: "` with a
+**trailing space**, which tokenizes to a standalone `' '` token. A BPE model
+trained on `"Answer:"` followed by `" The"` (space bound to the word) is off
+distribution when handed a bare space, so the continuation degrades. Note this
+is the *same* trailing space that causes the first-answer-token masking noted
+earlier — one root cause with two downstream effects. It applies to models
+configured with `apply_chat_template: False` (phi-1_5); chat-template models
+such as the Llama TOFU checkpoints do not take this path, which may be why it
+has gone unnoticed upstream.
+
+**P2 is NOT passed.** Two of four metrics disagree. No matrix cells until this
+is resolved and the resolution is recorded.
+
+**Next:** confirm/refute the trailing-space hypothesis -> decide which
+generation convention the campaign reports (and document the choice, since it
+changes ROUGE by ~0.08) -> re-verify on an unlearned checkpoint ->
+pre-register gamma/scope on forget05 -> matrix.
