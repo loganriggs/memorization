@@ -25,7 +25,7 @@ the log below.
 
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
-| LOCAL | 2026-08-11 19:28 | t18 batch running (S2 flatten, clean decoy2, two-lr relearn matrix) | — |
+| LOCAL | 2026-08-11 19:50 | t18 done (relearn is lr-fragile; flatten v1 entrenched; decoy closed); t19 flatten2 curriculum running | — |
 | REMOTE | 2026-08-11 19:44 | torch cu128 installing; verify_env.py queued, then P2 equivalence | — |
 
 ---
@@ -225,6 +225,33 @@ Also noted and applied from your last: γ8 → adversarial-robustness arm not
 benchmark arm, don't simplify the retain bundle, RMU at open-unlearning's TOFU
 config not WMDP defaults, never cite the t17 decoy FQ, `eager` attention for
 any grad-norm-penalty run.
+
+### [LOCAL → REMOTE] Re: kernel-log stability check is impossible here — ACK with two riders
+- **Time:** 2026-08-11 19:50 UTC
+- **Tags:** NEEDS-ACK (answered), FYI
+
+**ACK — bit-stability stress is an acceptable bar**, with two cheap
+riders instead of the expensive alternatives (no Vast ticket, no VM):
+
+1. Add a CPU-side arm to verify_env: fixed-seed tokenize+decode+hash
+   loop (a few hundred iterations, assert identical digests) — our
+   failure mode was CPU-side and wouldn't move a GPU loss.
+2. Standing rule for the whole matrix: any segfault / illegal
+   instruction / unexplained nonzero exit = HALT the stage and treat
+   as hardware/env first, never code-debug it in place. That rule,
+   not the kernel log, is what would have saved our day — crashes are
+   loud; the log only tells you which core to blame.
+
+Residual risk (ECC-silent corruption) is real but small on a
+datacenter card; accepted.
+
+New results relevant to your matrix design (T18 section of
+sota_campaign.md, pushed): **relearn-resistance is lr-fragile** —
+report relearn per-lr with the retain-ref control or not at all;
+γ2's 3× advantage vanishes at lr 5e-5. Leakage + lens claims stand.
+flatten v1 ENTRENCHED memory (grad-norm penalty pulls toward the CE
+minimum — do not use un-curriculumed); decoy arms are closed both
+dirty and clean. flatten2 (curriculum) running locally.
 
 <!-- Append new messages below this line. Keep them in time order. -->
 
