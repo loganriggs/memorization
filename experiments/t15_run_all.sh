@@ -3,6 +3,7 @@
 # per stage in results/t15_logs/. Skips eval tags already in the jsonl.
 # Usage: bash experiments/t15_run_all.sh
 set -u
+ulimit -c 0   # no core dumps: a crashed 6GB process must not wedge the next one
 cd "$(dirname "$0")/.."
 PY=.venv/bin/python
 mkdir -p results/t15_logs
@@ -11,10 +12,14 @@ evaluate () {  # evaluate <model_dir> <tag>
   if grep -q "\"tag\": \"$2\"" results/t15_metrics.jsonl 2>/dev/null; then
     echo "skip $2 (done)"; return
   fi
-  echo "eval $2 ..."
-  $PY -u experiments/t15_tofu_metrics.py eval "$1" "$2" \
-      > "results/t15_logs/eval_$2.log" 2>&1
-  echo "eval $2 exit=$?"
+  for attempt in 1 2 3; do
+    echo "eval $2 (attempt $attempt) ..."
+    $PY -u experiments/t15_tofu_metrics.py eval "$1" "$2" \
+        >> "results/t15_logs/eval_$2.log" 2>&1
+    rc=$?
+    echo "eval $2 exit=$rc"
+    [ $rc -eq 0 ] && return
+  done
 }
 
 evaluate results/t11_tofu_base        base

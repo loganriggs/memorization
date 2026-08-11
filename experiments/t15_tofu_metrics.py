@@ -76,14 +76,40 @@ def rouge_l_recall(gen, ref):
     return dp[len(g), len(r)] / len(r)
 
 
-def greedy_rouge(model, tok, row, max_new=64):
-    prompt = f"Question: {row['question']}\nAnswer:"
-    ids = tok(prompt, return_tensors="pt").input_ids.to(DEVICE)
-    with torch.no_grad():
-        out = model.generate(ids, max_new_tokens=max_new, do_sample=False,
-                             pad_token_id=tok.eos_token_id)
-    gen = tok.decode(out[0, ids.shape[1]:], skip_special_tokens=True)
-    return rouge_l_recall(gen, row["answer"])
+def greedy_batch(model, tok, rows, max_new=64, bs=8):
+    """Batched greedy decoding WITHOUT model.generate / KV cache: the
+    cached one-token decode path segfaults intermittently on this
+    torch-2.13/cu130/sm_120 setup (crash in rotate_half; see research
+    log's tiny-tensor hot-loop class). Full-sequence forwards only."""
+    texts = []
+    for i in range(0, len(rows), bs):
+        chunk = rows[i:i + bs]
+        enc = [tok(f"Question: {r['question']}\nAnswer:",
+                   add_special_tokens=False).input_ids for r in chunk]
+        lens = torch.tensor([len(e) for e in enc], device=DEVICE)
+        B, L = len(chunk), int(lens.max()) + max_new
+        ids = torch.full((B, L), tok.eos_token_id, dtype=torch.long,
+                         device=DEVICE)
+        mask = torch.zeros((B, L), dtype=torch.long, device=DEVICE)
+        for b, e in enumerate(enc):
+            ids[b, :len(e)] = torch.tensor(e, device=DEVICE)
+            mask[b, :len(e)] = 1
+        cur = lens.clone()
+        ar = torch.arange(B, device=DEVICE)
+        with torch.no_grad():
+            for _ in range(max_new):
+                lg = model(input_ids=ids, attention_mask=mask,
+                           use_cache=False).logits
+                nxt = lg[ar, cur - 1].argmax(-1)
+                ids[ar, cur] = nxt
+                mask[ar, cur] = 1
+                cur = cur + 1
+        for b in range(B):
+            gen = ids[b, int(lens[b]):int(cur[b])].tolist()
+            if tok.eos_token_id in gen:
+                gen = gen[:gen.index(tok.eos_token_id)]
+            texts.append(tok.decode(gen).split("\nQuestion")[0].strip())
+    return texts
 
 
 def eval_set(model, tok, rows, with_rouge=True):
@@ -108,8 +134,10 @@ def eval_set(model, tok, rows, with_rouge=True):
             probs.append(float(p_true / (p_true +
                                          sum(np.exp(l)
                                              for l in pert_lps))))
-        if with_rouge:
-            rouges.append(greedy_rouge(model, tok, row))
+    if with_rouge:
+        gens = greedy_batch(model, tok, rows)
+        rouges = [rouge_l_recall(g, row["answer"])
+                  for g, row in zip(gens, rows)]
     return probs, rouges, ratios
 
 
