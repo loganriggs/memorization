@@ -239,6 +239,34 @@ Findings:
    lr, familiarity confound (which cuts in our favor here — unlearned
    models saw the questions and STILL recover 3× slower end-to-end).
 
+## T18 RESULTS — two-lr relearn matrix, flatten, clean decoy (2026-08-11)
+
+| model | relearn→½base @1e-5 | @5e-5 |
+|---|---|---|
+| retain_ref (never-knew control) | 5 | 5 |
+| NPO | 10 | 5 |
+| ours all γ2 | 15 | **5** |
+| ours all γ8 | 15 | **10** |
+| decoy2 (clean) | 5 | 5 |
+
+1. **Relearn-resistance is lr-fragile (red-team #6 vindicated).** The
+   3× time-to-recovery at lr 1e-5 collapses at 5e-5: γ2 = control, γ8
+   only 2×. Claims must be reported per-lr with the never-knew control;
+   leakage and lens-depth results are unaffected. Only depth (γ8)
+   buys any lr-robust resistance.
+2. **Flatten (S2 v1) FAILED instructively**: forget R-L 0.936 (> base
+   0.858) — the ‖∇CE_f‖² term's easiest descent is "stay at the CE
+   minimum where gradients are already zero," so it ENTRENCHED the
+   memory instead of flattening the unlearned point. (Side finding:
+   grad-norm penalties are a memory-hardening tool.) flatten2 =
+   curriculum (pin-only 100 steps, then pin+penalty) — running.
+3. **Decoy route is closed, cleanly.** decoy2 (derangement decoys, no
+   eval contamination): FQ 0.007 (fail), relearns to 0.94 in 5 steps
+   at both lrs — the fastest full recovery of any arm. Confident-wrong
+   answers hand relearning its gradients back.
+4. Strong-sense super-unlearning (slower RATE than never-knew) is
+   currently achieved by NO arm; flatten2 is the remaining candidate.
+
 ## Reconciliation with the LP session (2026-08-11)
 
 Their battery confirmed: LP-edited models relearn at masking speed

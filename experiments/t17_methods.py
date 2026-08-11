@@ -83,7 +83,8 @@ def stage_train():
                       for i in range(len(forget))]
 
     # flatten needs double-backward; SDPA lacks a second derivative
-    attn = {"attn_implementation": "eager"} if method == "flatten" else {}
+    attn = ({"attn_implementation": "eager"}
+            if method in ("flatten", "flatten2") else {})
     model = AutoModelForCausalLM.from_pretrained(
         BASE_DIR, torch_dtype=torch.float32, **attn).to(DEVICE)
     base = AutoModelForCausalLM.from_pretrained(
@@ -121,22 +122,29 @@ def stage_train():
         elif method in ("decoy", "decoy2"):
             dids, dlab, dm = make_batch(tok, [decoy_rows[j] for j in fi])
             floss = t11.batch_ce(model, dids, dlab, dm)
-        elif method == "flatten":
+        elif method in ("flatten", "flatten2"):
             # S2: pin + flatten the relearn direction. First-order
             # anti-relearn: CE_f(theta - eta*g) ~ CE_f - eta*||g||^2,
             # so penalize ||grad_theta CE_forget||^2 (double backward;
             # forget half-batch to fit memory).
+            # flatten's t18 failure mode: the gn2 term's easiest descent
+            # is "stay at the CE minimum where grads are already 0" —
+            # it ENTRENCHED the memory (forget R-L 0.936 > base).
+            # flatten2 = curriculum: pin-only for the first half, then
+            # add gn2 once the facts are already unlearned.
             fam, _ = t13.tok_margins(model, fids, flab, fm)
             pin = torch.stack([F.relu(m + GAMMA).mean()
                                for m in fam]).mean()
-            hids, hlab, hm = make_batch(tok, [forget[j]
-                                              for j in fi[:2]])
-            ce_f = t11.batch_ce(model, hids, hlab, hm)
-            gs = torch.autograd.grad(ce_f, [p for p in model.parameters()
-                                            if p.requires_grad],
-                                     create_graph=True)
-            gn2 = sum((gg ** 2).sum() for gg in gs)
-            floss = pin + FLAT_LAM * gn2
+            floss = pin
+            if method == "flatten" or step >= STEPS // 2:
+                hids, hlab, hm = make_batch(tok, [forget[j]
+                                                  for j in fi[:2]])
+                ce_f = t11.batch_ce(model, hids, hlab, hm)
+                gs = torch.autograd.grad(
+                    ce_f, [p for p in model.parameters()
+                           if p.requires_grad], create_graph=True)
+                gn2 = sum((gg ** 2).sum() for gg in gs)
+                floss = pin + FLAT_LAM * gn2
         else:
             raise ValueError(method)
 
