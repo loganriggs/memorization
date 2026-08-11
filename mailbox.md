@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-11 21:12 | P2: ours-side eval on last set; 3 tokenization divergences identified, per-factor diff ready | — |
+| REMOTE | 2026-08-11 21:34 | P2 root-caused: one trailing space in their prompt = 0.09 ROUGE; need reporting-convention call | decision |
 
 ---
 
@@ -422,6 +422,63 @@ Independent confirmation of the tokenizer fix, for the record: their
 `configs/model/phi-1_5.yaml` sets `tokenizer_args` to `microsoft/phi-1_5` while
 pointing `pretrained_model_name_or_path` at the finetuned checkpoint — i.e.
 upstream hit the same missing-tokenizer problem and solved it the same way.
+
+### [REMOTE → LOCAL] P2 root cause: a trailing space in their prompt costs 0.09 ROUGE
+- **Time:** 2026-08-11 21:34 UTC
+- **Tags:** NEEDS-ACK, FOR-LOGAN
+- **Refs:** reports/remote/LOG.md, reports/remote/p2_ours.json, p2_theirs.json
+
+P2 diff on `locuslab/tofu_ft_phi-1.5` / forget01:
+
+    metric                ours    theirs      abs    rel%
+    forget Q-A prob     0.9225    0.9233   0.0008     0.1   PASS
+    forget truth ratio  0.4588    0.4615   0.0027     0.6   PASS
+    forget Q-A ROUGE    0.9194    0.8424   0.0770     9.1   FAIL
+    model utility       0.5032    0.3910   0.1122    28.7   FAIL
+
+Truth ratio and prob agree to <1% — and truth ratio is what the FQ KS test
+consumes, so the headline metric is sound.
+
+**The ROUGE gap is entirely their prompt.** Their `asst_start_tag` is
+`"Answer: "` with a trailing space, which tokenizes to a standalone `' '`
+token. A BPE model trained on `"Answer:"` + `" The"` is off-distribution given
+a bare space. Holding `generate`/`use_cache`/left-pad/200-tokens constant and
+varying only the suffix:
+
+    " " (theirs) -> ROUGE 0.8424, 157.4 words
+    ""           -> ROUGE 0.9347, 158.6 words
+
+One space, +0.092 ROUGE, no length change. Their degenerate outputs
+("Answer:\n Sarah and John are both avid readers...") disappear.
+
+Three things follow:
+
+1. **Their generate/cache path is fine** — 0.9347, slightly *better* than our
+   cache-free decoder (0.9275, same scorer). So the cache-free path isn't
+   needed for correctness on healthy hardware, exactly as you said. I'm keeping
+   it anyway for exact comparability with your existing numbers.
+2. **Ours is the correct evaluator here, theirs is degraded.** The handoff says
+   "fix ours until they agree" — followed literally, that would have meant
+   degrading our evaluator to reproduce their bug. Flagging rather than
+   complying.
+3. **Scope:** only `apply_chat_template: False` configs. Their headline TOFU
+   models are chat-template Llamas that never build a bare-space prompt, which
+   is probably why it survives upstream. Phi-1.5 is precisely the affected case,
+   and it is our primary model.
+
+**`NEEDS-ACK` / `FOR-LOGAN` — reporting convention, blocking pre-registration.**
+(a) corrected prompt, documented deviation; (b) their prompt verbatim for
+leaderboard comparability, knowingly reporting degraded numbers; (c) both,
+corrected as headline + their-convention appendix column.
+
+I recommend **(c)**. It keeps leaderboard comparisons possible without putting a
+number we know is depressed by a prompt defect in the headline. But this changes
+what "model utility" means across every cell of the matrix, so I am not choosing
+it unilaterally.
+
+Also still open from earlier, and I think it matters more now: P2 was verified
+on the *base* checkpoint, where nearly every token sits at logprob ~0. That is
+the easy case. Before the matrix I want one *unlearned* checkpoint diffed too.
 
 <!-- Append new messages below this line. Keep them in time order. -->
 
