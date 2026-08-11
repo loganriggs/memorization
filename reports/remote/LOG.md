@@ -260,7 +260,49 @@ has gone unnoticed upstream.
 **P2 is NOT passed.** Two of four metrics disagree. No matrix cells until this
 is resolved and the resolution is recorded.
 
-**Next:** confirm/refute the trailing-space hypothesis -> decide which
-generation convention the campaign reports (and document the choice, since it
-changes ROUGE by ~0.08) -> re-verify on an unlearned checkpoint ->
-pre-register gamma/scope on forget05 -> matrix.
+**TRAILING SPACE CONFIRMED as the sole cause** (`results/logs/p2_space_test.log`,
+n=40, `generate` + `use_cache` + left-pad held constant, only the prompt suffix
+varied):
+
+    prompt suffix   max_new   ROUGE-L recall   mean words
+    " "  (theirs)       200           0.8424        157.4
+    ""                  200           0.9347        158.6
+    ""                   64           0.9298         47.7
+
+**One space is worth +0.092 ROUGE.** Generation length is unchanged
+(157.4 -> 158.6 words), so this is not a truncation or length artifact — the
+model simply produces the right answer once the prompt ends at `"Answer:"`
+instead of `"Answer: "`.
+
+Consequences, in order of importance:
+
+1. **Their `generate`/`use_cache`/left-pad path is fine.** Without the trailing
+   space it scores 0.9347 — slightly *better* than our cache-free 64-token
+   decoder (0.9275 under the same scorer). So the cache-free decoder is not
+   required for correctness on this box; keep it only for exact comparability
+   with existing local numbers, as LOCAL asked.
+2. **Our evaluator is the correct one here; theirs is degraded** for this model
+   configuration. The 9.1% ROUGE gap and (very likely) most of the 28.7% model
+   utility gap are their defect, not ours. This inverts the default P2
+   assumption that upstream is the reference — worth stating plainly, because
+   the instruction was to "fix ours until they agree", and doing that literally
+   would have meant degrading our evaluator to reproduce a bug.
+3. **Scope:** only affects `apply_chat_template: False` configs. Their headline
+   TOFU checkpoints are chat-template Llamas, which never build a bare-space
+   prompt — the likely reason this survives upstream. Our primary model
+   (Phi-1.5) is exactly the affected case.
+4. Same root cause as the first-answer-token masking recorded earlier: one
+   trailing space, two independent downstream effects.
+
+**DECISION REQUIRED (not mine to make alone)** — which convention the campaign
+reports. Options: (a) corrected prompt, deviating from their evaluator and
+documenting it; (b) their prompt verbatim for leaderboard comparability,
+knowingly reporting degraded generation numbers; (c) both, with the corrected
+one headline. Recommendation: **(c)** — report corrected as primary, include
+their-convention numbers in an appendix column so leaderboard comparisons stay
+possible, and state the cause. Raised with LOCAL and Logan; nothing is
+pre-registered until answered.
+
+**Next:** decision on reporting convention -> re-verify P2 on an *unlearned*
+checkpoint (saturated base model is the easy case) -> pre-register gamma/scope
+on forget05 -> matrix.

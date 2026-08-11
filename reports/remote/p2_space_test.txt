@@ -1,0 +1,11 @@
+Loading weights:   0%|          | 0/341 [00:00<?, ?it/s]Loading weights:   3%|▎         | 9/341 [00:00<00:18, 18.01it/s]Loading weights:  42%|████▏     | 143/341 [00:00<00:00, 311.78it/s]Loading weights:  65%|██████▌   | 223/341 [00:01<00:00, 243.16it/s]Loading weights:  81%|████████  | 275/341 [00:01<00:00, 221.18it/s]Loading weights:  92%|█████████▏| 314/341 [00:01<00:00, 232.30it/s]Loading weights: 100%|██████████| 341/341 [00:01<00:00, 220.63it/s]
+ISOLATING THE TRAILING SPACE (generate/use_cache held constant):
+[transformers] Ignoring clean_up_tokenization_spaces=True for BPE tokenizer CodeGenTokenizer. The clean_up_tokenization post-processing step is designed for WordPiece tokenizers and is destructive for BPE (it strips spaces before punctuation). Set clean_up_tokenization_spaces=False to suppress this warning, or set clean_up_tokenization_spaces_for_bpe_even_though_it_will_corrupt_output=True to force cleanup anyway.
+  suffix=' '   pad=left  max_new=200 -> ROUGE-L recall 0.8424, mean words 157.4
+  suffix=''    pad=left  max_new=200 -> ROUGE-L recall 0.9347, mean words 158.6
+  suffix=''    pad=left  max_new= 64 -> ROUGE-L recall 0.9298, mean words 47.7
+
+theirs-style first example: Answer:
+        Sarah and John are both avid readers. Sarah reads a variety of genres, fro
+no-space  first example: The full name of the author born in Kuwait City, Kuwait on the 8th of September, 1956 is H
+space test exit=0
