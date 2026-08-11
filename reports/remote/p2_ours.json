@@ -1,0 +1,19 @@
+{
+  "stage": "eval",
+  "tag": "p2_phi_ours",
+  "model_dir": "locuslab/tofu_ft_phi-1.5",
+  "model_utility": 0.5032,
+  "forget_prob": 0.9225,
+  "forget_rouge": 0.9194,
+  "forget_truth_ratio_med": 2.2757,
+  "forget_truth_ratio_stat": 0.4588,
+  "retain_prob": 0.9149,
+  "retain_rouge": 0.9021,
+  "retain_truth_ratio_med": 2.2074,
+  "real_authors_prob": 0.4606,
+  "real_authors_rouge": 0.26,
+  "real_authors_truth_ratio_med": 5.3913,
+  "world_facts_prob": 0.5659,
+  "world_facts_rouge": 0.3436,
+  "world_facts_truth_ratio_med": 14.2764
+}
