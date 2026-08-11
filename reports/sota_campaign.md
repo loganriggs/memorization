@@ -330,6 +330,25 @@ Local queue after t20: empty. Next locally actionable: seeds/error
 bars for the relearn table if we claim it; LP-session phase-2 QP; else
 on-call for the remote matrix.
 
+## T21 RESULTS — seed replication of the relearn/jog claims (2026-08-11)
+
+Train seeds {0,1,2} for pin_g8 and NPO (exact original protocols) +
+relearn-seed variance {r0,r1,r2} on seed-0 checkpoints and control:
+
+- **Direct relearn, pin_g8: 15/20/15 steps (train seeds), 15/20/15
+  (relearn seeds) vs control 5/5/5.** The ≥3× time-to-recovery claim
+  is seed-robust (worst pairing 15 vs 5).
+- **Jog immunity replicates on every seed**: pin_g8 ends at
+  0.013/0.014/0.020 after 30 benign steps (3 seeds); NPO drifts to
+  0.22–0.25 on all seeds. Cleanest, most robust claim we have.
+- **Paraphrase relearn: pin_g8 20/20/25 vs control 10/15/15** — the
+  familiarity-controlled advantage holds at every pairing but narrows
+  to 1.3× at the worst one; report as "1.3–2.5×", not "1.67×".
+- **NPO's unlearning depth is itself seed-noisy**: forget R-L at
+  seed 0/1/2 = 0.200/0.055/0.219 (4× spread). Its headline leakage
+  number needs seeds as much as ours — matrix must run ≥3 seeds for
+  baselines too (already pre-registered, now evidenced).
+
 ## Reconciliation with the LP session (2026-08-11)
 
 Their battery confirmed: LP-edited models relearn at masking speed

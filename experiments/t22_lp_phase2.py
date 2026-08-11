@@ -174,16 +174,24 @@ def main():
               - lg1[sorted(removed)].min(1).values).max()), 9),
          "dD_norm": round(float(dD1.norm()), 3)})
 
-    dD2, t_star, _ = build_lp(h, y, D0, removed, phase=2)
-    D2 = D0 + dD2
-    m2, lg2 = margins_of(D2, h, y)
-    log({"stage": "phase2", "maximin_margin": round(t_star, 3),
-         "collateral": int((m2[keep] <= 0).sum()),
-         "margins_at_floor": int(((m2[keep] - t_star).abs() < 1e-6).sum()),
-         "removed_max_dev": round(float(
-             (lg2[sorted(removed)].max(1).values
-              - lg2[sorted(removed)].min(1).values).max()), 9),
-         "dD_norm": round(float(dD2.norm()), 3)})
+    # Maximin LP (phase 2) is optional: on the feasible regime HiGHS
+    # grinds on the degenerate maximin polytope (>25 min), and its
+    # vertex-degeneracy is already demonstrated in the infeasible
+    # regime. Skip via T22_SKIP_MAXIMIN=1; QP targets 2*MARGIN instead.
+    if os.environ.get("T22_SKIP_MAXIMIN"):
+        D2, t_star = None, 2 * MARGIN
+        log({"stage": "phase2", "skipped": True, "qp_target_src": "2*MARGIN"})
+    else:
+        dD2, t_star, _ = build_lp(h, y, D0, removed, phase=2)
+        D2 = D0 + dD2
+        m2, lg2 = margins_of(D2, h, y)
+        log({"stage": "phase2", "maximin_margin": round(t_star, 3),
+             "collateral": int((m2[keep] <= 0).sum()),
+             "margins_at_floor": int(((m2[keep] - t_star).abs() < 1e-6).sum()),
+             "removed_max_dev": round(float(
+                 (lg2[sorted(removed)].max(1).values
+                  - lg2[sorted(removed)].min(1).values).max()), 9),
+             "dD_norm": round(float(dD2.norm()), 3)})
 
     # phase 3: norm-regularized interior QP. Pure maximin is itself a
     # vertex (it pins margins at the NEW floor t*); a strictly convex
@@ -236,6 +244,8 @@ def main():
     sigmas = [0.002, 0.005, 0.01, 0.02, 0.05]
     for name, Dx in (("unedited", D0), ("phase1", D1), ("phase2", D2),
                      ("phase3_qp", D3)):
+        if Dx is None:
+            continue
         fr = fragility(Dx, h, y, removed, sigmas)
         log({"stage": "fragility", "model": name,
              **{f"s{s}_break/resur": v for s, v in fr.items()}})
