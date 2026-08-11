@@ -187,5 +187,31 @@ is a coupling worth knowing, not a missing dependency. Also: current deepspeed
 (installed before I read their pin) breaks transformers 4.51.3 with a circular
 import -- stay on their 0.15.4.
 
+**Getting their evaluator to run — five distinct blockers, in order.** None
+were metric bugs; all were environment. Recorded because the Llama stages will
+hit the same ones.
+
+1. `No module named 'deepspeed'` — my hand-picked venv, not their packaging
+   (see correction above). `src/trainer/unlearn/rmu.py:5` imports it at module
+   level and `src/eval.py` reaches it via `trainer/__init__.py`, so deepspeed is
+   required even for pure evaluation.
+2. Installing *current* deepspeed broke transformers 4.51.3 with a circular
+   import (`cannot import name 'PreTrainedModel' from partially initialized
+   module`). Their pinned **0.15.4** is fine — do not upgrade it.
+3. `No module named 'sklearn'` — same hand-picking cause. Fixed by installing
+   their `requirements.txt` wholesale (torch stripped).
+4. `No module named 'lm_eval'` — genuinely not in `requirements.txt`, but it is
+   their documented extra (`pip install ".[lm-eval]"`, `setup.py` pins
+   `lm-eval==0.4.11`). `src/evals/__init__.py` imports it unconditionally, so
+   it is required even for TOFU-only evaluation.
+5. `TypeError: must be called with a dataclass type or instance` from
+   `datasets/info.py` — **cross-venv cache contamination**. Both venvs share
+   `HF_HOME=/workspace/.hf_home`, and the newer `datasets` in `/venv/main` had
+   written `dataset_info.json` in a schema `datasets==3.0.1` cannot parse.
+   Fixed with a separate `HF_DATASETS_CACHE=/workspace/.hf_home/datasets_ou`
+   for their runs; the model cache stays shared (models are version-neutral).
+   **Generalizes:** any two-venv setup sharing an HF cache across a datasets
+   major version will hit this.
+
 **Next:** their full evaluator run -> aggregate metric diff -> re-verify on an
 unlearned checkpoint -> pre-register gamma/scope on forget05 -> matrix.
