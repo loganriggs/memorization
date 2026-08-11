@@ -1,18 +1,21 @@
 """T15: TOFU's official metrics — truth ratio, forget quality (KS test),
 model utility — for our Pythia-410M checkpoints.
 
-Definitions (TOFU, arXiv 2401.06121):
-  normalized prob  P(a|q)^(1/|a|) = exp(mean answer-token logprob)
-  truth ratio      R = mean_norm-prob(perturbed answers) / norm-prob(ref
-                   answer), ref = paraphrased_answer where it exists
-                   (forget/retain), else the original answer (real
-                   authors / world facts).
+Definitions verified line-by-line against the official code
+(github.com/locuslab/tofu, aggregate_eval_stat.py + evaluate_util.py):
+  normalized prob  exp(mean answer-token logprob); on real_authors/
+                   world_facts, multiple-choice normalized
+                   P(true)/(P(true)+sum P(perturbed)).
+  truth ratio      R = exp(ref_lp - mean perturbed_lp), ref =
+                   paraphrased_answer (forget/retain) else original
+                   answer; > 1 = prefers the true answer.
   forget quality   two-sample KS p-value between the unlearned model's
                    forget-set R distribution and the retain-only
                    reference model's. p > 0.05 = indistinguishable.
-  model utility    harmonic mean of 9 numbers: {norm prob, ROUGE-L
-                   recall of greedy gen, max(0, 1-R)} on each of
+  model utility    harmonic mean of 9 numbers: {prob, ROUGE-L recall of
+                   greedy gen, mean max(0, 1-1/R)} on each of
                    {retain_perturbed, real_authors, world_facts}.
+                   Forget set reports mean min(R, 1/R) instead.
 
 Stages (python t15_tofu_metrics.py <stage> ...):
   train_retain          — train the retain-only reference model
@@ -83,20 +86,28 @@ def greedy_rouge(model, tok, row, max_new=64):
     return rouge_l_recall(gen, row["answer"])
 
 
-def truth_ratio(model, tok, row):
-    ref_ans = row.get("paraphrased_answer") or row["answer"]
-    ref_lp = norm_logprob(model, tok, row["question"], ref_ans)
-    pert = [np.exp(norm_logprob(model, tok, row["question"], a))
-            for a in row["perturbed_answer"]]
-    return float(np.mean(pert) / np.exp(ref_lp))
-
-
 def eval_set(model, tok, rows, with_rouge=True):
+    """Official formulas (tofu/aggregate_eval_stat.py):
+    truth ratio R = exp(ref_lp - mean(pert_lp)), ref = paraphrased
+    answer where present else original (>1 = prefers true answer);
+    prob = normalized P(answer) on QA sets, multiple-choice-normalized
+    P(true)/(P(true)+sum P(pert)) on real_authors/world_facts."""
     probs, rouges, ratios = [], [], []
     for row in rows:
-        probs.append(np.exp(norm_logprob(model, tok, row["question"],
-                                         row["answer"])))
-        ratios.append(truth_ratio(model, tok, row))
+        q = row["question"]
+        ans_lp = norm_logprob(model, tok, q, row["answer"])
+        pert_lps = [norm_logprob(model, tok, q, a)
+                    for a in row["perturbed_answer"]]
+        para = row.get("paraphrased_answer")
+        ref_lp = norm_logprob(model, tok, q, para) if para else ans_lp
+        ratios.append(float(np.exp(ref_lp - np.mean(pert_lps))))
+        if para:
+            probs.append(float(np.exp(ans_lp)))
+        else:
+            p_true = np.exp(ans_lp)
+            probs.append(float(p_true / (p_true +
+                                         sum(np.exp(l)
+                                             for l in pert_lps))))
         if with_rouge:
             rouges.append(greedy_rouge(model, tok, row))
     return probs, rouges, ratios
@@ -124,14 +135,16 @@ def stage_eval():
                      "rouge": float(np.mean(rouges)),
                      "truth_ratio_med": float(np.median(ratios))}
         print(f"{tag} {name}: {res[name]}", flush=True)
-    # model utility: harmonic mean of 9 (utility sets only, R -> 1-R)
+    # model utility: harmonic mean of 9; utility sets use
+    # mean(max(0, 1 - 1/R)); forget's reported stat is mean(min(R, 1/R))
     nine = []
     for name in ("retain", "real_authors", "world_facts"):
-        probs = res[name]["prob"]
-        nine += [probs, res[name]["rouge"],
-                 float(np.mean([max(0.0, 1.0 - r)
+        nine += [res[name]["prob"], res[name]["rouge"],
+                 float(np.mean([max(0.0, 1.0 - 1.0 / r)
                                 for r in ratios_store[name]]))]
     utility = (len(nine) / sum(1.0 / max(x, 1e-9) for x in nine))
+    res["forget"]["truth_ratio_stat"] = float(np.mean(
+        [min(r, 1.0 / r) for r in ratios_store["forget"]]))
     with open(f"{TR_DIR}/{tag}.json", "w") as f:
         json.dump(ratios_store, f)
     log({"stage": "eval", "tag": tag, "model_dir": model_dir,
