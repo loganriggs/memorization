@@ -1,4 +1,16 @@
-# Pre-registration — Phi-1.5 TOFU matrix
+# Pre-registration — TOFU matrix (Llama-3.2-1B primary)
+
+**Primary model (Logan, 2026-08-11, option C):**
+`open-unlearning/tofu_Llama-3.2-1B-Instruct_full`, evaluated against the
+published retain references `retain90/95/99` and their published eval logs
+(`open-unlearning/eval`). Chosen because it is the only 1B-class setting where
+all three forget splits have official retain references — Phi-1.5 has only
+retain90, so official forget quality exists only for forget10 there.
+
+**Phi-1.5's role:** method development, ablations, and a forget10-only
+leaderboard cell (its retain90 reference exists). Phi cells inherit the prompt
+convention rules below; the trailing-space defect is Phi-only and cannot occur
+on the Llama chat-template path.
 
 **Status: DRAFT — not yet in force.** Becomes binding when committed with
 `prereg: freeze` in the commit subject, which must happen **before** any
@@ -13,7 +25,7 @@ them. Everything below that is not measured on forget05 is frozen by fiat.
 
 ## 1. What is selected, and where
 
-Selected on **forget05 only** (200 rows):
+Selected on **forget05 only** (200 rows, vs the published retain95 reference):
 
 | knob | candidate values |
 |---|---|
@@ -59,10 +71,20 @@ Seeds: **0, 1, 2**. Report **mean ± range** (not SD — n=3).
 
 ## 3. Reporting conventions, fixed
 
-- **Prompt convention:** ours (`"Question: {q}\nAnswer:"`, no trailing space) is
-  the headline; open-unlearning's trailing-space convention appears as an
-  appendix column. Every record carries `prompt_convention`. See
-  `reports/remote/LOG.md` — their trailing space costs ~0.09 ROUGE on Phi-1.5.
+- **Template:** Llama cells use the open-unlearning chat template
+  (`T15_TEMPLATE=llama3`, copied from their model config); Phi cells use the raw
+  QA template, ours-convention headline with the trailing-space variant as an
+  appendix column (`prompt_convention` stamped on every record). The
+  trailing-space defect costs ~0.09 ROUGE on Phi and cannot occur on the Llama
+  path.
+- **Attention:** `sdpa`, not their configured `flash_attention_2` (no sm_120
+  wheels) — deviation 4, applies to every Llama cell equally.
+- **FQ reference distributions:** the published eval logs in
+  `open-unlearning/eval` are the canonical retain references for Llama cells.
+  Before first use, verify convention alignment: our evaluator's truth ratios
+  on the full model KS'd against their full-model log must give p ~ 1 (same
+  model, same distribution). If it does not, the transform is wrong — fix ours,
+  never resample.
 - **Decode protocol is part of the metric definition and is frozen here:**
   greedy, **64 new tokens**, truncate at the next `"\nQuestion"`, cache-free
   path (`T15_MAX_NEW=64`, `T15_TRUNCATE=1`). This is not a cosmetic choice —
