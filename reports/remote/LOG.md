@@ -461,4 +461,40 @@ never compared end-to-end — only the truth-ratio distribution it is computed
 from. FQ equivalence is therefore inferred from truth-ratio equivalence plus
 identical KS code, not directly measured.
 
-**Next:** freeze the pre-registration -> forget05 gamma/scope sweep -> matrix.
+### Correction to the attribution above — the decoder, not the truncation
+
+Running our evaluator with **everything** matched to open-unlearning (their
+prompt, 200 new tokens, truncation **off**) gives forget ROUGE **0.5035**, while
+`generate()` under those same settings gave **0.5785**. So:
+
+- My earlier third term, "our `\nQuestion` truncation + cache-free path
+  (~0.05)", **misattributed the cause**. Truncation is nearly irrelevant
+  (0.5025 with it on, 0.5035 with it off — 0.001). The whole ~0.075 belongs to
+  the **cache-free decoder itself**.
+- Both are supposed to be plain greedy decoding and should emit identical
+  token sequences. They do not. That is a discrepancy in **our** code, which is
+  precisely what P2 exists to surface.
+
+The earlier "no residual, exact match" claim stands only for the `generate()`
+path (0.5785 vs their 0.5785448). It does **not** hold for the decoder t15
+actually uses, and the P2 closure above is amended accordingly:
+
+    prompt trailing space   large on base model (~0.09)   -- their defect
+    decode length 64->200   0.024 on unlearned            -- convention
+    truncation on/off       0.001                         -- negligible
+    cache-free vs generate  ~0.075                        -- OURS, unexplained
+
+`experiments/p2_decoder_diff.py` compares the two decoders token-by-token on
+identical inputs and reports the first divergent step, to find where they part
+rather than guessing.
+
+**Why this matters for the campaign, stated carefully.** Every local number and
+every matrix cell uses the cache-free decoder, so the protocol is *internally*
+consistent and method-vs-method comparisons remain valid. But if the cache-free
+path degrades generation, forget-set leakage is **understated for every method
+uniformly** — ratio claims survive, absolute claims do not. Until the divergence
+is explained I will not describe our leakage numbers as measuring what a
+standard decoder would measure.
+
+**Next:** explain the decoder divergence -> freeze the pre-registration ->
+forget05 gamma/scope sweep -> matrix.
