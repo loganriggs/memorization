@@ -696,6 +696,39 @@ like-for-like). Also fixed a transformers 4.x/5.x API difference where
 `apply_chat_template(tokenize=True)` returns a BatchEncoding in 5.x and
 slicing it yielded an empty answer span.
 
-**Next:** ours-v2 run -> numeric diff -> FQ self-test (KS of our full-model
-TRs vs their published log, transform theirs = 1/ours, expect p ~ 1) ->
-measure Llama leakage floor -> `prereg: freeze` -> forget05 sweep.
+---
+
+## CHAT-TEMPLATE P2 — CLOSED. FQ SELF-TEST — PASS.
+
+v2 (canonical `apply_chat_template` + date header) vs their evaluator, both on
+`tofu_Llama-3.2-1B-Instruct_full` / forget01:
+
+    metric                   ours   theirs    rel%
+    forget truth ratio     0.4726   0.4731     0.1
+    model utility          0.5979   0.5981     0.0
+    forget Q-A prob        0.8953   0.9020     0.7
+    forget Q-A ROUGE       0.8320   0.8537     2.5   (bf16/fp32 generation
+                                                      band; their own rerun
+                                                      differs from their
+                                                      published number by 2.2%)
+
+**FQ convention self-test: KS p = 1.000000** (stat 0.05, n=40 both sides,
+means 0.5070 vs 0.5029). Our full-model truth ratios are distributionally
+identical to their published log under the `theirs = 1/ours` transform — the
+transform and the scored span are right, so forget quality computed against
+the published retain logs (`t21_fq_published.py fq`) is trustworthy. The
+selftest exits nonzero on failure, so runners gate on it mechanically.
+
+Tooling landed for the matrix: `t20_llama_ours.py` (our method on Llama-1B,
+t14 losses verbatim, chat-template batches, steps 150/750/1500 per split at
+batch 4) and `t21_fq_published.py` (FQ vs published logs + mandatory
+selftest).
+
+**In flight:** Llama leakage floor — retain95 evaluated on forget05 under the
+frozen headline protocol (llama3 template, 64 new tokens, LCS scorer). Its
+forget-set gen-ROUGE is the forget05 floor; retain99/retain90 get the same
+treatment before forget01/10 are scored.
+
+**Next:** floor lands -> `prereg: freeze` -> forget05 gamma/scope sweep (t20,
+8 cells x 3 seeds; wall-time measured on the first cell before committing to
+the rest).
