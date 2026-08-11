@@ -1,5 +1,5 @@
 {
-  "ours": {
+  "ours_ourprompt": {
     "stage": "eval",
     "tag": "p2_ga_ours",
     "model_dir": "/workspace/memorization/results/p2_phi_ga",
@@ -31,6 +31,26 @@
     "forget_truth_ratio_stat": 0.4756,
     "retain_prob": 0.902,
     "retain_rouge": 0.6904,
+    "retain_truth_ratio_med": 2.1897,
+    "real_authors_prob": 0.4507,
+    "real_authors_rouge": 0.19,
+    "real_authors_truth_ratio_med": 5.4448,
+    "world_facts_prob": 0.5627,
+    "world_facts_rouge": 0.2766,
+    "world_facts_truth_ratio_med": 13.9365
+  },
+  "ours_oufull": {
+    "stage": "eval",
+    "tag": "p2_ga_ours_oufull",
+    "model_dir": "/workspace/memorization/results/p2_phi_ga",
+    "prompt_convention": "ou_trailing_space",
+    "model_utility": 0.44,
+    "forget_prob": 0.6158,
+    "forget_rouge": 0.5035,
+    "forget_truth_ratio_med": 2.3009,
+    "forget_truth_ratio_stat": 0.4756,
+    "retain_prob": 0.902,
+    "retain_rouge": 0.6905,
     "retain_truth_ratio_med": 2.1897,
     "real_authors_prob": 0.4507,
     "real_authors_rouge": 0.19,

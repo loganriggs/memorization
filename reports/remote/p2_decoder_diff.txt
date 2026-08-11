@@ -1,0 +1,7 @@
+Loading weights:   0%|          | 0/341 [00:00<?, ?it/s]Loading weights: 100%|██████████| 341/341 [00:00<00:00, 4602.15it/s]
+[transformers] Ignoring clean_up_tokenization_spaces=True for BPE tokenizer CodeGenTokenizer. The clean_up_tokenization post-processing step is designed for WordPiece tokenizers and is destructive for BPE (it strips spaces before punctuation). Set clean_up_tokenization_spaces=False to suppress this warning, or set clean_up_tokenization_spaces_for_bpe_even_though_it_will_corrupt_output=True to force cleanup anyway.
+model=/workspace/memorization/results/p2_phi_ga
+n=16 max_new=64 suffix=''
+examples with any divergence: 0/16
+ROUGE-L recall  cache-free 0.6927   generate 0.6927
+decoder diff exit=0

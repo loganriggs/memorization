@@ -496,5 +496,42 @@ uniformly** — ratio claims survive, absolute claims do not. Until the divergen
 is explained I will not describe our leakage numbers as measuring what a
 standard decoder would measure.
 
-**Next:** explain the decoder divergence -> freeze the pre-registration ->
-forget05 gamma/scope sweep -> matrix.
+### Decoder exonerated — it is EOS post-processing, not the decoder
+
+`p2_decoder_diff.py`, token-by-token on identical inputs:
+
+    examples with any divergence: 0/16
+    ROUGE-L recall   cache-free 0.6927   generate 0.6927
+
+The cache-free decoder and `model.generate()` emit **identical token
+sequences**. My previous entry blamed the decoder; that was wrong, and this is
+the third time this residual has changed owner (truncation -> decoder -> EOS
+handling). Each attribution was made on evidence and each was overturned by a
+more direct measurement, which is an argument for measuring rather than
+reasoning about this class of difference.
+
+Real cause: **whether text generated after the EOS token is scored.**
+
+- Our `t15` truncates the generation at the first EOS.
+- open-unlearning decodes with `skip_special_tokens=True` and no EOS trim, and
+  their generation config sets `max_new_tokens: 200` without an eos stopping
+  criterion. `skip_special_tokens` deletes the EOS *token* but keeps everything
+  after it, so post-EOS continuation is scored.
+
+Supporting evidence already in hand: our decoder is insensitive to the length
+cap (ROUGE 0.5025 at 64 tokens vs 0.5035 at 200 — 0.001) because it stops at
+EOS regardless, whereas the untrimmed path moved 0.5544 -> 0.5785 over the same
+range, which is exactly what "more post-EOS text to match against" predicts.
+
+**This reverses the earlier reading.** Our evaluator is not degraded — it is the
+stricter one. Their ROUGE credits a model for text emitted after it signalled it
+was done, which inflates leakage-style metrics for verbose degenerate outputs.
+On an unlearned model, that is precisely the regime where it matters most.
+
+**Protocol consequence.** Keep our EOS-trimmed convention as headline (already
+frozen in the pre-registration). The appendix column must state that
+open-unlearning's number includes post-EOS text — otherwise the two columns look
+like a bug in ours rather than a definitional difference.
+
+**Next:** confirm EOS trimming accounts for the full gap -> freeze the
+pre-registration -> forget05 gamma/scope sweep -> matrix.
