@@ -295,6 +295,41 @@ far below, γ0.5's 0.141 below, NPO's 0.200 below — "at the floor"
 claims apply to none of the passing configs; FQ passing ≠ sitting at
 the floor).
 
+## T20 RESULTS — round-2 methods, attack matrix, weight geometry
+(2026-08-11)
+
+Direct relearn (steps to half-base, 1e-5 / 5e-5): flat_l1 10/5,
+npo_sam 10/5 (= npo), pin_sam 15/5 (= pin), reoccupy 10/5. **All four
+round-2 mechanisms refuted for rate-resistance; plain depth stays the
+only lever.** (FLAT-L1 was otherwise healthy: FQ 0.919, retain 0.843,
+leak 0.112 — the L1 theory failed cleanly, not from side effects.)
+
+**Finding 1 — depth is jog-immune.** 30 steps of benign finetuning on
+200 unseen retain facts (the "adjacent-data attack" that resurrects
+shallowly-unlearned facts): NPO creeps 0.200→0.247; flat_l1
+0.112→0.19; **all_g8 stays 0.009→0.020 — essentially immune**, 10×
+below NPO throughout. Control flat at floor (0.364→0.374 ✓). Where
+direct-relearn barely separated methods, the jog attack separates
+them dramatically — this is depth's strongest robustness axis and
+belongs in the matrix as a headline column.
+
+**Finding 2 — resistance survives the familiarity control.** Via
+paraphrased questions (which no model saw during unlearning),
+retain_ref learns the facts in 15 steps; all_g8 takes 25 — 1.67×
+slower than never-knew on clean ground. Weak-sense super-unlearning
+is real, not a question-familiarity artifact.
+
+**Finding 3 — weight distance dissociates from relearn speed.**
+flatten2 and all_g8 sit at identical ‖ΔW‖ (2.85) yet relearn in 5 vs
+15 steps; decoy2 (2.64) in 5 vs all_g2 (2.79) in 15. Resistance is
+WHERE you moved, not how far — the weight-space mirror of T13's
+margin-displacement dissociation. (RMU wdist 0.61 confirms it barely
+moved = never unlearned.)
+
+Local queue after t20: empty. Next locally actionable: seeds/error
+bars for the relearn table if we claim it; LP-session phase-2 QP; else
+on-call for the remote matrix.
+
 ## Reconciliation with the LP session (2026-08-11)
 
 Their battery confirmed: LP-edited models relearn at masking speed
