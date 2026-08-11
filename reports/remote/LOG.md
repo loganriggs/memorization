@@ -294,15 +294,38 @@ Consequences, in order of importance:
 4. Same root cause as the first-answer-token masking recorded earlier: one
    trailing space, two independent downstream effects.
 
-**DECISION REQUIRED (not mine to make alone)** — which convention the campaign
-reports. Options: (a) corrected prompt, deviating from their evaluator and
-documenting it; (b) their prompt verbatim for leaderboard comparability,
-knowingly reporting degraded generation numbers; (c) both, with the corrected
-one headline. Recommendation: **(c)** — report corrected as primary, include
-their-convention numbers in an appendix column so leaderboard comparisons stay
-possible, and state the cause. Raised with LOCAL and Logan; nothing is
-pre-registered until answered.
+**DECISION (Logan, 2026-08-11): option (c)** — report both, our corrected
+prompt as headline, open-unlearning's trailing-space convention as appendix
+material.
 
-**Next:** decision on reporting convention -> re-verify P2 on an *unlearned*
-checkpoint (saturated base model is the easy case) -> pre-register gamma/scope
-on forget05 -> matrix.
+Implemented as `T15_PROMPT_SUFFIX` in `t15_tofu_metrics.py` (default `""` =
+ours; `" "` = theirs). Every eval record now carries a `prompt_convention`
+field, because ROUGE and anything derived from it — model utility above all —
+are **not comparable across conventions**. A matrix cell missing that field is
+unusable, not merely ambiguous.
+
+**Why the base-checkpoint P2 pass is weak evidence** (worth stating precisely,
+since it is the reason the gate is not yet closed). Our measured mean logprob
+was -0.0576 — that is a geometric-mean per-token probability of **0.944**, i.e.
+the memorized checkpoint predicts nearly every answer token with ~94%
+confidence. logprob ~0 means probability ~1, not uniform (uniform over this
+vocab would be ~ -10.8).
+
+The two evaluators differ in *which tokens enter the scored span* (theirs drops
+the first answer token, adds EOS). When every term in the mean is ~0, swapping
+one term for another cannot move it much — which is exactly why the EOS factor
+measured 0.0015. That is agreement **by saturation**, not agreement between the
+implementations. On an unlearned model the per-token distribution is spread and
+much lower (a first answer token might sit at -6 against a body at -1), so span
+choice can move the mean substantially. Passing on the base checkpoint therefore
+says little about the models the entire matrix is made of.
+
+**Stage in flight: their GA trainer on Phi-1.5 / forget01** (their
+`unlearn/tofu/default` config, `trainer=GradAscent`, 2 epochs, output
+`results/p2_phi_ga`). Two purposes: produce a genuinely unlearned,
+non-saturated checkpoint for the harder P2 diff, and verify their *training*
+pipeline runs on Blackwell — which the matrix needs regardless, since baselines
+must run at their published per-method configs.
+
+**Next:** GA checkpoint -> P2 re-diff on it (the real gate) -> pre-register
+gamma/scope on forget05 -> matrix.

@@ -50,6 +50,15 @@ TR_DIR = "results/t15_truthratios"
 TOK_ID = os.environ.get("T15_TOK_ID")            # default: t11.MODEL_ID (Pythia-410m)
 FORGET_SPLIT = os.environ.get("T15_FORGET_SPLIT", "forget01_perturbed")
 
+# Generation prompt convention (Logan's call, 2026-08-11: report both, ours
+# headline, open-unlearning's as an appendix column).
+#   ""  -> "Question: {q}\nAnswer:"   our convention, correct for BPE models
+#   " " -> "Question: {q}\nAnswer: "  open-unlearning's asst_start_tag
+# Their trailing space tokenizes to a standalone ' ' token, which is off
+# distribution for a model trained on "Answer:" + " The" and costs ~0.09
+# ROUGE-L recall on Phi-1.5. See reports/remote/LOG.md.
+PROMPT_SUFFIX = os.environ.get("T15_PROMPT_SUFFIX", "")
+
 
 def get_tok():
     if TOK_ID:
@@ -112,7 +121,7 @@ def greedy_batch(model, tok, rows, max_new=64, bs=8):
     texts = []
     for i in range(0, len(rows), bs):
         chunk = rows[i:i + bs]
-        enc = [tok(f"Question: {r['question']}\nAnswer:",
+        enc = [tok(f"Question: {r['question']}\nAnswer:" + PROMPT_SUFFIX,
                    add_special_tokens=False).input_ids for r in chunk]
         lens = torch.tensor([len(e) for e in enc], device=DEVICE)
         B, L = len(chunk), int(lens.max()) + max_new
@@ -204,6 +213,9 @@ def stage_eval():
     with open(f"{TR_DIR}/{tag}.json", "w") as f:
         json.dump(ratios_store, f)
     log({"stage": "eval", "tag": tag, "model_dir": model_dir,
+         # which prompt convention produced these generations -- ROUGE and
+         # anything derived from it are not comparable across conventions
+         "prompt_convention": "ou_trailing_space" if PROMPT_SUFFIX == " " else "ours",
          "model_utility": round(utility, 4),
          **{f"{k}_{m}": round(v, 4) for k, d in res.items()
             for m, v in d.items()}})
