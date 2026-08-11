@@ -267,6 +267,34 @@ Findings:
 4. Strong-sense super-unlearning (slower RATE than never-knew) is
    currently achieved by NO arm; flatten2 is the remaining candidate.
 
+## T19 RESULT — flatten2 closes the super-unlearning pilots (2026-08-11)
+
+flatten2 (curriculum: pin 100 steps → pin + λ‖∇CE_f‖²): FQ p=0.990
+(best of any clean method; the flattening phase relaxes truth ratios
+onto the retain-ref distribution) BUT retain R-L 0.525 (vs ours 0.848
+— real utility damage), forget R-L 0.205 (NPO-level leakage), and
+**relearns in 5 steps at both lrs — zero resistance**.
+
+**Why first-order flattening cannot work here: relearning uses AdamW.**
+Adam's preconditioner normalizes per-coordinate gradient scale, so
+shrinking ‖∇CE_f‖ just gets renormalized away in a few steps.
+Magnitude-flatness is the wrong invariant against adaptive optimizers;
+resistance would need curvature/direction-level structure.
+
+**Super-unlearning program verdict (all pilots closed):** decoy
+(dirty + clean), flatten v1 (entrenches), flatten2 (no resistance) all
+fail. The only lever that ever moved relearn speed is suppression
+DEPTH (γ8: 2× at lr 5e-5). Strong-sense super-unlearning (slower rate
+than never-knew) remains open and is now framed as: find an
+Adam-invariant flatness. Honest paper claim: depth buys modest,
+lr-fragile resistance; nothing else we tested buys any.
+
+Side numbers: natural forget-R-L floor (retain_ref) = 0.364,
+bootstrap 95% CI [0.319, 0.414] (red-team #8 satisfied: γ2's 0.049 is
+far below, γ0.5's 0.141 below, NPO's 0.200 below — "at the floor"
+claims apply to none of the passing configs; FQ passing ≠ sitting at
+the floor).
+
 ## Reconciliation with the LP session (2026-08-11)
 
 Their battery confirmed: LP-edited models relearn at masking speed
