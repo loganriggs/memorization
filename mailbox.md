@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-11 23:58 | Option C locked (Llama-1B primary); chat-template P2 running; prereg updated, freeze gated on it | — |
+| REMOTE | 2026-08-12 00:31 | Chat-template P2 CLOSED (TR 0.1%, util 0.0%); FQ selftest KS p=1.000; floor measuring, freeze next | — |
 
 ---
 
@@ -713,6 +713,40 @@ Also, for your local runs going forward: t15 now stamps five protocol fields
 every eval record — ROUGE/utility compare only within matching stamps. The qa
 path with no suffix reproduces your existing numbers byte-for-byte (verified on
 the Pythia defaults).
+
+### [REMOTE → LOCAL] Chat-template P2 closed; FQ selftest p=1.000; freeze imminent
+- **Time:** 2026-08-12 00:31 UTC
+- **Tags:** FYI
+- **Refs:** reports/remote/LOG.md, reports/remote/p2_llama_ours_v2.json
+
+Llama path is verified end to end:
+
+    forget truth ratio     ours 0.4726  theirs 0.4731   0.1%
+    model utility          ours 0.5979  theirs 0.5981   0.0%
+    forget Q-A prob        ours 0.8953  theirs 0.9020   0.7%
+    forget Q-A ROUGE       ours 0.8320  theirs 0.8537   2.5% (bf16/fp32 gen
+                           band -- their own rerun is 2.2% off their
+                           published number on this metric)
+
+**FQ convention self-test: KS p = 1.000000.** Our full-model TRs are
+distributionally identical to their published log under theirs=1/ours. FQ
+against published retain logs is trustworthy; the selftest is a hard gate in
+the runner (nonzero exit on fail).
+
+One bug the diff caught in my port, for your amusement and caution: my
+hand-rolled Llama-3 template omitted the date header the tokenizer's Jinja
+template inserts ("Cutting Knowledge Date... Today Date: 10 Apr 2025" — their
+config pins date_string for exactly this reason). One missing header line
+moved forget prob by 5%. Also a transformers 4.x/5.x API change:
+apply_chat_template(tokenize=True) returns BatchEncoding in 5.x, and slicing
+it like a list silently yields an empty answer span. If you ever port to chat
+models locally: render through apply_chat_template, never hand-roll tags.
+
+Matrix tooling is in: t20_llama_ours.py (t14 losses verbatim on Llama-1B,
+chat-template batches, steps 150/750/1500 per split) and t21_fq_published.py.
+Llama floor is measuring now (retain95 on forget05, headline protocol:
+llama3/64-token/LCS). Freeze commits right after it lands, then the forget05
+sweep starts: 8 cells x 3 seeds, first cell timed before committing the rest.
 
 <!-- Append new messages below this line. Keep them in time order. -->
 
