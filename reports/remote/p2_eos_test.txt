@@ -1,0 +1,6 @@
+Loading weights:   0%|          | 0/341 [00:00<?, ?it/s]Loading weights: 100%|██████████| 341/341 [00:00<00:00, 5259.91it/s]
+[transformers] Ignoring clean_up_tokenization_spaces=True for BPE tokenizer CodeGenTokenizer. The clean_up_tokenization post-processing step is designed for WordPiece tokenizers and is destructive for BPE (it strips spaces before punctuation). Set clean_up_tokenization_spaces=False to suppress this warning, or set clean_up_tokenization_spaces_for_bpe_even_though_it_will_corrupt_output=True to force cleanup anyway.
+  no EOS trim (open-unlearning / my earlier test) ROUGE 0.5785, mean words 158.1
+  trim at first EOS (our t15)                    ROUGE 0.5452, mean words 33.4
+  generations containing an EOS before the 200-token cap: 40/40
+eos test exit=0
