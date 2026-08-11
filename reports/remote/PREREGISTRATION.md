@@ -95,10 +95,14 @@ Seeds: **0, 1, 2**. Report **mean ± range** (not SD — n=3).
   and any leakage claim ("Nx less generation leakage") must state the decode
   protocol or it is not checkable.
 - **Generation-leakage ROUGE is reported as distance from the natural floor**,
-  not as raw ROUGE. Floor = retain-reference forget R-L = **0.364, 95% CI
-  [0.319, 0.414]** (LOCAL, t18). FQ-passing configs sit *below* that floor, so
-  a forget-quality pass is **never** described as "indistinguishable generation
-  behaviour" — the KS test is on truth ratios only.
+  not as raw ROUGE. The floor is the retain reference's forget-set gen-ROUGE
+  **measured per model family under this document's decode protocol** — the
+  Pythia floor (0.364 [0.319, 0.414], LOCAL t18, LCS scorer) does NOT transfer
+  to Llama or across scorers. The Llama floor comes from evaluating
+  `retain95` (and per-split refs) with our evaluator before the sweep; it is a
+  measured constant, not a fitted one. FQ-passing configs can sit below the
+  floor, so a forget-quality pass is **never** described as "indistinguishable
+  generation behaviour" — the KS test is on truth ratios only.
 - **Baselines** (GA, NPO, SimNPO, RMU) run at open-unlearning's published
   per-method TOFU configs, at **effective batch 32**
   (`per_device_train_batch_size=4` × `gradient_accumulation_steps=8`; their
@@ -120,7 +124,12 @@ reason, in a commit that predates the affected scoring:
 
 ## 5. Open at time of writing
 
-- P2 evaluator equivalence is **not yet closed** on the unlearned checkpoint.
-  No cell may be scored until it is, per the handoff.
-- Llama extensions (1B full-FT → 3B → 8B LoRA) are out of scope for this
-  document; LoRA on 8B is a declared deviation and will need its own note.
+- **Phi P2 is closed** (zero residual; see LOG). The **Llama chat-template
+  path** still needs its P2 check: (a) our evaluator vs theirs on
+  `tofu_Llama-3.2-1B-Instruct_full`, and (b) the FQ convention self-test
+  against the published full-model eval log (p ~ 1 required). Freeze happens
+  only after both pass.
+- The Llama leakage floor must be measured (retain refs under our decode
+  protocol) before the sweep is scored.
+- 3B and 8B extensions are out of scope for this document; LoRA on 8B is a
+  declared deviation and will need its own note.
