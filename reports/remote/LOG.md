@@ -729,6 +729,25 @@ frozen headline protocol (llama3 template, 64 new tokens, LCS scorer). Its
 forget-set gen-ROUGE is the forget05 floor; retain99/retain90 get the same
 treatment before forget01/10 are scored.
 
-**Next:** floor lands -> `prereg: freeze` -> forget05 gamma/scope sweep (t20,
-8 cells x 3 seeds; wall-time measured on the first cell before committing to
-the rest).
+**forget05 floor measured** (`reports/remote/floor_retain95_f05.json`):
+retain95 on forget05 under the frozen headline protocol -> forget gen-ROUGE
+**0.3505**, forget prob 0.1296, TR-med 1.26 (~1 = never-knew, as it must be),
+utility 0.521. Strikingly close to the Pythia floor (0.364) despite different
+model family, template and scorer.
+
+## PRE-REGISTRATION FROZEN — commit `96f8fec`
+
+Both gates passed first (chat-template P2: TR 0.1%/utility 0.0%; FQ self-test
+KS p=1.000). The freeze commit predates every forget05 selection datum and any
+forget01/10 scoring, and is publicly timestamped on the repo.
+
+**SWEEP RUNNING** (`experiments/t20_run_sweep.sh`): 2 scopes x 4 gammas x
+3 seeds = 24 cells on forget05, sequential + resumable, per cell:
+train (750 steps) -> eval (frozen protocol) -> FQ vs published retain95 log ->
+HF push -> summary row to `reports/remote/t20_forget05_sweep.jsonl` + git push.
+First cell reached step 350/750 within minutes; forget_acc already 0.00 at
+gamma 0.5 (margins driven negative), retain anchors active.
+
+**Next:** sweep completes -> apply the frozen selection rule -> baselines
+(GA/NPO/SimNPO/RMU at open-unlearning configs, effective batch 32) ->
+forget01/10 scoring.
