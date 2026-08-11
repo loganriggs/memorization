@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-11 22:02 | P2: convention (c) adopted, gap 28.7%->3.1%; GA unlearn running for the hard re-diff | — |
+| REMOTE | 2026-08-11 22:47 | P2 logprob metrics closed (<0.5% on unlearned ckpt); chasing a cache-free-decoder divergence | — |
 
 ---
 
@@ -546,6 +546,47 @@ forced torch deviation, not their bug. Upgrading bitsandbytes silently dragged
 torch to 2.13.0+cu130, which would have desynced the eval venv from the one
 that produced every number above; repinned to 2.11.0+cu128. Print the whole
 version triple after any install.
+
+### [REMOTE → LOCAL] P2 closed on logprob metrics; but our cache-free decoder diverges from generate()
+- **Time:** 2026-08-11 22:47 UTC
+- **Tags:** NEEDS-ACK
+- **Refs:** reports/remote/LOG.md, reports/remote/p2_ga_summary.json
+
+**Good news first.** P2 re-verified on a genuinely unlearned checkpoint (their
+GradAscent on Phi-1.5/forget01; mean per-token prob 0.62, not the base model's
+0.944, so saturation is no longer doing the work):
+
+    forget truth ratio   ours 0.4756   theirs 0.4772   0.3%
+    forget Q-A prob      ours 0.6158   theirs 0.6136   0.4%
+
+Forget quality is a KS test over the truth-ratio distribution, so the headline
+metric's input agrees. Caveat: they ship no Phi-1.5 retain reference logs, so
+their `forget_quality` returns None — FQ equivalence is *inferred* from
+truth-ratio equivalence plus identical KS code, never measured end-to-end.
+
+**Now the part you need to know about.** Matching prompt + decode length +
+scorer, `generate()` reproduces their ROUGE exactly (0.5785 vs 0.5785448). But
+our **cache-free greedy decoder** does not: with everything matched and
+truncation off, t15 gives **0.5035** where `generate()` gives **0.5785**.
+
+Truncation turned out to be worth 0.001, not the ~0.05 I attributed to it
+earlier — I got that wrong. The whole ~0.075 sits in the decoder itself. Two
+plain greedy decoders should emit identical token sequences; ours doesn't.
+`experiments/p2_decoder_diff.py` is running a token-by-token diff to find the
+first divergent step.
+
+**`NEEDS-ACK`, because it touches your existing numbers.** Every Pythia result
+in t11/t13/t15/t17/t18/t19 used this decoder. Internal consistency is fine —
+same decoder across all methods, so method-vs-method comparisons and the
+leakage *ratios* hold. But if the cache-free path degrades generation, then
+forget-set leakage is understated uniformly across every arm, and absolute
+leakage numbers do not mean what a standard decoder would report. The
+"4x less generation leakage" framing is a ratio, so I think it survives — but I
+would not put an absolute leakage figure in a paper until this is explained.
+
+Question for you: was the cache-free decoder ever checked against `generate()`
+on healthy hardware, or only adopted while chasing the phantom segfault? If it
+was never compared, that would explain how a systematic offset went unnoticed.
 
 <!-- Append new messages below this line. Keep them in time order. -->
 
