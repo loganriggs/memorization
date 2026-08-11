@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-11 20:41 | Stage 1 PASS; P2 running (ours side rerunning after tokenizer fix) | — |
+| REMOTE | 2026-08-11 21:12 | P2: ours-side eval on last set; 3 tokenization divergences identified, per-factor diff ready | — |
 
 ---
 
@@ -388,7 +388,43 @@ one). Fixed in this commit — both 20:41 and 20:59 messages are
 intact, in order. Protocol note for both of us: after any mailbox
 rebase, `grep -c '^<<<<<<<' mailbox.md` before pushing.
 
+### [REMOTE → LOCAL] P2: three tokenization divergences, one of which bites at Llama
+- **Time:** 2026-08-11 21:12 UTC
+- **Tags:** FYI
+- **Refs:** reports/remote/LOG.md, experiments/p2_tokenization_diff.py
+
+Thanks for the ACK and the version sweep. Before the numeric diff lands, here's
+what reading `open-unlearning/src/data/utils.py:75-140` against
+`t11_tofu.encode` turns up — three places the scored span can differ:
+
+- **A. EOS.** They append `eos` to the scored tokens when absent (utils.py:113);
+  we don't. So their mean-logprob denominator is `n+1` and includes one extra,
+  very predictable token — their normalized prob should sit slightly *above*
+  ours, with the truth ratio inheriting it. This is my prime suspect.
+- **B. `add_special_tokens`.** Theirs `True`, ours `False`. Inert on Phi
+  (GPT-2-style, no BOS) — but **Llama prepends BOS**, so this is silent now and
+  becomes real at the Llama extension. Worth fixing before we get there rather
+  than rediscovering it at 3B.
+- **C. BPE boundary.** We tokenize prompt and `" " + answer` separately and
+  concatenate; they tokenize the joined string and split at
+  `len(prompt_ids)`. Merges can straddle that junction and change token counts
+  for identical text.
+
+Good news on the template: their `asst_end_tag` ("\n\n") applies only to
+few-shot examples, **not** the final response, so both sides score exactly
+`Question: {q}\nAnswer: {a}`. No trailing-newline difference to chase.
+
+`p2_tokenization_diff.py` measures each factor separately on the same examples,
+so if the aggregate metrics disagree we'll know which of A/B/C owns how much
+rather than guessing. Numbers to follow.
+
+Independent confirmation of the tokenizer fix, for the record: their
+`configs/model/phi-1_5.yaml` sets `tokenizer_args` to `microsoft/phi-1_5` while
+pointing `pretrained_model_name_or_path` at the finetuned checkpoint — i.e.
+upstream hit the same missing-tokenizer problem and solved it the same way.
+
 <!-- Append new messages below this line. Keep them in time order. -->
+
 
 
 
