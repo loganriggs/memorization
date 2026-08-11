@@ -67,6 +67,67 @@ PROMPT_SUFFIX = os.environ.get("T15_PROMPT_SUFFIX", "")
 MAX_NEW = int(os.environ.get("T15_MAX_NEW", "64"))
 TRUNCATE_AT_QUESTION = os.environ.get("T15_TRUNCATE", "1") == "1"
 
+# ROUGE implementation. "lcs" is our word-level LCS recall (what every Pythia/Phi
+# pilot used); "rouge_score" is the standard package with a Porter stemmer, used
+# by official TOFU and open-unlearning. Measured 0.043 apart on the unlearned
+# Phi checkpoint -- so a floor measured under one is not valid under the other.
+ROUGE_IMPL = os.environ.get("T15_ROUGE", "lcs")
+
+# Prompt template. "qa" is TOFU's raw Question/Answer format (Pythia, Phi-1.5).
+# "llama3" is open-unlearning's chat template for the Llama TOFU checkpoints,
+# copied from configs/model/Llama-3.2-1B-Instruct.yaml. Note its asst_start_tag
+# ends in "\n\n", not a bare space, so the Phi trailing-space defect cannot
+# occur on this path.
+TEMPLATE = os.environ.get("T15_TEMPLATE", "qa")
+
+LLAMA3_SYS = ("<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n"
+              "You are a helpful assistant.<|eot_id|>")
+LLAMA3_USER_START = "<|start_header_id|>user<|end_header_id|>\n\n"
+LLAMA3_USER_END = "<|eot_id|>"
+LLAMA3_ASST_START = "<|start_header_id|>assistant<|end_header_id|>\n\n"
+
+
+def build_prompt(question):
+    """Prompt text, up to and including the assistant-turn opener."""
+    if TEMPLATE == "llama3":
+        return (LLAMA3_SYS + LLAMA3_USER_START + question + LLAMA3_USER_END
+                + LLAMA3_ASST_START)
+    return f"Question: {question}\nAnswer:" + PROMPT_SUFFIX
+
+
+def split_ids(tok, question, answer):
+    """(prompt_ids, answer_ids) under the active template.
+
+    The QA path tokenizes the two halves separately (' ' + answer keeps the
+    leading space bound to the first word, which is correct for BPE). The chat
+    path tokenizes the joined string and splits by prompt length, matching
+    open-unlearning's preprocess_chat_instance.
+    """
+    prompt = build_prompt(question)
+    if TEMPLATE == "llama3":
+        full = tok(prompt + answer, add_special_tokens=False).input_ids
+        pids = tok(prompt, add_special_tokens=False).input_ids
+        return pids, full[len(pids):]
+    pids = tok(prompt, add_special_tokens=False).input_ids
+    aids = tok(" " + answer, add_special_tokens=False).input_ids
+    return pids, aids
+
+
+def stop_ids(tok):
+    """Token ids that end a generation.
+
+    Llama-3 Instruct ends an assistant turn with <|eot_id|>, which is NOT always
+    what `tokenizer.eos_token_id` reports. Trimming on eos alone would leave the
+    post-turn continuation in the scored text -- precisely the behaviour we
+    criticised in open-unlearning's evaluator. Collect every applicable stop.
+    """
+    ids = {tok.eos_token_id}
+    for tokstr in ("<|eot_id|>", "<|end_of_text|>"):
+        i = tok.convert_tokens_to_ids(tokstr)
+        if i is not None and i != tok.unk_token_id:
+            ids.add(i)
+    return {i for i in ids if i is not None}
+
 
 def get_tok():
     if TOK_ID:
@@ -99,8 +160,17 @@ def log(rec):
 
 def norm_logprob(model, tok, question, answer):
     """Mean answer-token logprob (log of TOFU's normalized prob)."""
-    ids, labels, mask = t11.make_batch(tok, [{"question": question,
-                                              "answer": answer}])
+    if TEMPLATE == "qa" and not PROMPT_SUFFIX:
+        # Original path, byte-for-byte, so existing Pythia numbers reproduce.
+        ids, labels, mask = t11.make_batch(tok, [{"question": question,
+                                                  "answer": answer}])
+    else:
+        pids, aids = split_ids(tok, question, answer)
+        seq = (pids + aids)[:192]
+        lab = ([-100] * len(pids) + aids)[:192]
+        ids = torch.tensor([seq], device=DEVICE)
+        labels = torch.tensor([lab], device=DEVICE)
+        mask = torch.ones_like(ids)
     with torch.no_grad():
         lg = model(input_ids=ids, attention_mask=mask).logits
     lp = -F.cross_entropy(lg[0, :-1], labels[0, 1:], ignore_index=-100,
@@ -110,6 +180,19 @@ def norm_logprob(model, tok, question, answer):
 
 
 def rouge_l_recall(gen, ref):
+    """ROUGE-L recall under the configured implementation."""
+    if ROUGE_IMPL == "rouge_score":
+        from rouge_score import rouge_scorer
+        global _SCORER
+        try:
+            _SCORER
+        except NameError:
+            _SCORER = rouge_scorer.RougeScorer(["rougeL"], use_stemmer=True)
+        return _SCORER.score(ref, gen)["rougeL"].recall
+    return _lcs_recall(gen, ref)
+
+
+def _lcs_recall(gen, ref):
     g, r = gen.lower().split(), ref.lower().split()
     if not g or not r:
         return 0.0
@@ -134,7 +217,7 @@ def greedy_batch(model, tok, rows, max_new=None, bs=8):
     texts = []
     for i in range(0, len(rows), bs):
         chunk = rows[i:i + bs]
-        enc = [tok(f"Question: {r['question']}\nAnswer:" + PROMPT_SUFFIX,
+        enc = [tok(build_prompt(r["question"]),
                    add_special_tokens=False).input_ids for r in chunk]
         lens = torch.tensor([len(e) for e in enc], device=DEVICE)
         B, L = len(chunk), int(lens.max()) + max_new
@@ -154,12 +237,13 @@ def greedy_batch(model, tok, rows, max_new=None, bs=8):
                 ids[ar, cur] = nxt
                 mask[ar, cur] = 1
                 cur = cur + 1
+        stops = stop_ids(tok)
         for b in range(B):
             gen = ids[b, int(lens[b]):int(cur[b])].tolist()
-            if tok.eos_token_id in gen:
-                gen = gen[:gen.index(tok.eos_token_id)]
-            txt = tok.decode(gen)
-            if TRUNCATE_AT_QUESTION:
+            cut = min((gen.index(s) for s in stops if s in gen), default=len(gen))
+            gen = gen[:cut]
+            txt = tok.decode(gen, skip_special_tokens=True)
+            if TRUNCATE_AT_QUESTION and TEMPLATE == "qa":
                 txt = txt.split("\nQuestion")[0]
             texts.append(txt.strip())
     return texts
@@ -231,7 +315,11 @@ def stage_eval():
     log({"stage": "eval", "tag": tag, "model_dir": model_dir,
          # which prompt convention produced these generations -- ROUGE and
          # anything derived from it are not comparable across conventions
+         # Protocol stamp -- ROUGE and model utility are comparable ONLY across
+         # records sharing all four of these.
          "prompt_convention": "ou_trailing_space" if PROMPT_SUFFIX == " " else "ours",
+         "template": TEMPLATE, "rouge_impl": ROUGE_IMPL,
+         "max_new": MAX_NEW, "truncate_at_question": TRUNCATE_AT_QUESTION,
          "model_utility": round(utility, 4),
          **{f"{k}_{m}": round(v, 4) for k, d in res.items()
             for m, v in d.items()}})
