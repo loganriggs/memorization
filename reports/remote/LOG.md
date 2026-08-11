@@ -327,5 +327,30 @@ non-saturated checkpoint for the harder P2 diff, and verify their *training*
 pipeline runs on Blackwell — which the matrix needs regardless, since baselines
 must run at their published per-method configs.
 
+**GA training blocker: `ModuleNotFoundError: No module named 'triton.ops'`.**
+Chain: `transformers.trainer.get_optimizer_cls_and_kwargs` -> `bitsandbytes`
+-> `nn/triton_based_modules.py` -> `triton.ops`, which newer triton (bundled
+with torch 2.11) removed. Their pinned `bitsandbytes==0.44.1` predates that
+removal. This is a **downstream consequence of the torch deviation**, not an
+upstream bug: at their pinned torch 2.4.1 the combination is consistent, and
+torch 2.4.1 is exactly what Blackwell forbids.
+
+Their config uses `optim: paged_adamw_32bit` (a bitsandbytes paged optimizer),
+which is part of the published baseline recipe, so the fix is to move the
+library rather than swap the optimizer and quietly change the baseline.
+
+**Dependency-drift trap, worth recording.** Upgrading bitsandbytes silently
+pulled **torch 2.11.0+cu128 -> 2.13.0+cu130** in the eval venv. That would have
+(a) changed the foundation under their otherwise-pinned stack and (b)
+desynchronized the eval venv from `/venv/main`, where every result so far was
+produced — turning any later our-vs-theirs difference into an uninterpretable
+two-variable comparison. Caught by printing the full version triple after every
+environment change rather than only the package being installed. Torch repinned
+to 2.11.0+cu128; bitsandbytes kept at the newer version.
+
+**Also confirmed:** their `save_strategy: 'no'` does not mean no checkpoint —
+`src/train.py:62` calls `trainer.save_model(output_dir)` explicitly, so the
+final model is written.
+
 **Next:** GA checkpoint -> P2 re-diff on it (the real gate) -> pre-register
 gamma/scope on forget05 -> matrix.
