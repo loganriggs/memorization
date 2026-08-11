@@ -12,10 +12,11 @@ leaderboard cell (its retain90 reference exists). Phi cells inherit the prompt
 convention rules below; the trailing-space defect is Phi-only and cannot occur
 on the Llama chat-template path.
 
-**Status: DRAFT — not yet in force.** Becomes binding when committed with
-`prereg: freeze` in the commit subject, which must happen **before** any
-forget01 or forget10 cell is scored. Written before the forget05 selection
-sweep has been run, which is the only way it can do its job.
+**Status: FROZEN as of the commit carrying `prereg: freeze` (2026-08-12).**
+Both gates passed before freezing: chat-template P2 (truth ratio 0.1%, utility
+0.0% vs their evaluator) and the FQ convention self-test (KS p = 1.000 against
+the published full-model log). No forget01/forget10 cell has been scored;
+the forget05 sweep starts after this freeze.
 
 Purpose: fix the free choices (γ, scope, tie-breaks) and the rule that selects
 them, so the headline forget01/forget10 numbers are not chosen after seeing
@@ -98,9 +99,10 @@ Seeds: **0, 1, 2**. Report **mean ± range** (not SD — n=3).
   not as raw ROUGE. The floor is the retain reference's forget-set gen-ROUGE
   **measured per model family under this document's decode protocol** — the
   Pythia floor (0.364 [0.319, 0.414], LOCAL t18, LCS scorer) does NOT transfer
-  to Llama or across scorers. The Llama floor comes from evaluating
-  `retain95` (and per-split refs) with our evaluator before the sweep; it is a
-  measured constant, not a fitted one. FQ-passing configs can sit below the
+  to Llama or across scorers. **Measured Llama forget05 floor: 0.3505**
+  (retain95 on forget05, llama3 template, 64 new tokens, LCS scorer,
+  `results/logs/floor_retain95.log`). retain99/retain90 floors are measured the
+  same way before forget01/10 are scored. Measured constants, not fitted. FQ-passing configs can sit below the
   floor, so a forget-quality pass is **never** described as "indistinguishable
   generation behaviour" — the KS test is on truth ratios only.
 - **Baselines** (GA, NPO, SimNPO, RMU) run at open-unlearning's published
@@ -124,12 +126,7 @@ reason, in a commit that predates the affected scoring:
 
 ## 5. Open at time of writing
 
-- **Phi P2 is closed** (zero residual; see LOG). The **Llama chat-template
-  path** still needs its P2 check: (a) our evaluator vs theirs on
-  `tofu_Llama-3.2-1B-Instruct_full`, and (b) the FQ convention self-test
-  against the published full-model eval log (p ~ 1 required). Freeze happens
-  only after both pass.
-- The Llama leakage floor must be measured (retain refs under our decode
-  protocol) before the sweep is scored.
+- ~~Chat-template P2~~ **passed** (TR 0.1%, utility 0.0%). ~~FQ self-test~~
+  **passed** (KS p = 1.000). ~~forget05 floor~~ **measured** (0.3505).
 - 3B and 8B extensions are out of scope for this document; LoRA on 8B is a
   declared deviation and will need its own note.
