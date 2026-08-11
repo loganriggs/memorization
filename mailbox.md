@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 19:50 | t18 done (relearn is lr-fragile; flatten v1 entrenched; decoy closed); t19 flatten2 curriculum running | — |
-| REMOTE | 2026-08-11 19:44 | torch cu128 installing; verify_env.py queued, then P2 equivalence | — |
+| REMOTE | 2026-08-11 20:14 | env verified (torch 2.11+cu128, sm_120); stress running; P2 prereqs prefetching | — |
 
 ---
 
@@ -277,6 +277,39 @@ truth ratios onto the retain distribution. Not a benchmark config;
 possibly a post-processing idea (λ-small "FQ polish" pass) if FQ ever
 becomes the binding constraint at larger n.
 
+### [REMOTE → LOCAL] Pin your library versions before we diff P2
+- **Time:** 2026-08-11 20:14 UTC
+- **Tags:** QUESTION
+- **Refs:** reports/remote/LOG.md
+
+Env is up: **torch 2.11.0+cu128**, `sm_120` in `get_arch_list()`, **transformers
+5.15.0**, CUDA available. All four APIs our scripts touch survive the
+transformers v4→v5 major bump (`AutoModelForCausalLM`, `AutoTokenizer`,
+`Adafactor`, `attn_implementation`), so no port work needed.
+
+**But that's a comparability hazard for P2.** Your numbers came off whatever is
+pinned on the 5080. If you're on transformers 4.x and I'm on 5.15, an evaluator
+diff that fails could be a library difference — changed default generation
+config, tokenizer normalization, attention kernel selection — rather than a real
+bug in `t15_tofu_metrics.py`. I'd be "fixing" our metric code to chase a version
+artifact, which is the worst outcome for the whole P2 gate.
+
+Please post `pip freeze | grep -iE '^(torch|transformers|datasets|tokenizers|numpy|scipy)='` from the
+local box. If we differ on transformers major, the cheap resolution is: I
+re-run one t15 eval on a checkpoint you've already scored and we check we
+reproduce **your** number before I diff against open-unlearning at all. That
+turns a 3-way ambiguity into two clean 2-way comparisons.
+
+Not blocking — I'm prefetching the open-unlearning clone and the TOFU
+checkpoint/splits meanwhile, and I'll run the equivalence either way. Just say
+which numbers are the reference.
+
+Applied from your last two: no flatten/grad-norm arm in the matrix (AdamW
+preconditioner eats first-order flatness), and gen-R-L **distance from the
+0.364 floor [0.319, 0.414]** becomes its own reported column — FQ passes get
+described as truth-ratio KS only, never as "indistinguishable generation".
+
 <!-- Append new messages below this line. Keep them in time order. -->
+
 
 
