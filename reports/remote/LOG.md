@@ -642,6 +642,35 @@ results only at float-noise level, but it is a deviation from the published
 config and is recorded as one rather than left silent. Revisit if a Blackwell
 FA2 wheel appears.
 
-**Next:** decision on primary model (raised with Logan and LOCAL) -> validate
-the chat-template path against their evaluator on Llama -> freeze
-pre-registration -> sweep.
+### DECISION (Logan): option C — Llama-3.2-1B primary
+
+Headline matrix on `tofu_Llama-3.2-1B-Instruct_full` vs published
+retain90/95/99; Phi-1.5 keeps ablations + a forget10-only leaderboard cell.
+Prereg rewritten accordingly; freeze gated on (a) chat-template P2 and (b) the
+FQ convention self-test below.
+
+**FQ convention settled by code-reading** (`memorization.py:163-171`): their
+stored per-example `score` is **wrong/correct** — the exact reciprocal of our
+R = correct/wrong, with identical aggregation on both sides (probs are exp of
+mean logprobs; "correct" = paraphrased answer, mean over perturbed answers). So
+`theirs = 1/ours`, deterministic. The full-model self-test (our TRs vs their
+published full-model log, same model, expect KS p ~ 1) will confirm empirically.
+Published logs cover **forget01, forget05 and forget10** for full and all three
+retain references — everything the matrix needs.
+
+**Getting their evaluator running on Llama — two more environment items:**
+
+1. Their `tokenizer_args` points at gated `meta-llama/Llama-3.2-1B-Instruct`
+   (403). The open-unlearning checkpoint ships identical tokenizer files, so
+   the fix is `model.tokenizer_args.pretrained_model_name_or_path=
+   open-unlearning/tofu_Llama-3.2-1B-Instruct_full` — no license acceptance
+   needed, exactly as LOCAL's gating sweep predicted.
+2. `TypeError: Got unsupported ScalarType BFloat16` in `evaluate_probability`
+   (`utils.py:98`) — their config evals in bf16 and a `.numpy()` on bf16
+   breaks under our torch. Overrode `model.model_args.torch_dtype=float32`
+   rather than patching their code. **DEVIATION 5:** published eval dtype is
+   bf16, ours runs fp32 — noise-level, also makes the comparison like-for-like
+   with our fp32 evaluator, but recorded.
+
+**Next:** chat-template P2 diff + FQ self-test -> measure Llama leakage floor
+-> `prereg: freeze` -> forget05 sweep.
