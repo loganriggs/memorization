@@ -82,5 +82,51 @@ implementations could disagree, from reading both:
   choice. That is where a real discrepancy would live, and it is what the
   numeric diff has to settle.
 
-**Next:** run both evaluators on `locuslab/tofu_ft_phi-1.5` and diff ->
-pre-register gamma/scope on forget05 -> matrix.
+**BLOCKER FOUND AND FIXED — `locuslab/tofu_ft_phi-1.5` ships no tokenizer.**
+The repo contains only `config.json`, `model.safetensors`,
+`generation_config.json`, `trainer_state.json`, `training_args.bin`.
+`AutoTokenizer.from_pretrained` does **not** raise on this: it returns a
+`GPT2Tokenizer` with `vocab_size == 0` and `eos_token_id == 0` that encodes
+every string to `[]` (identical with `use_fast` True and False). Our first run
+survived only by accident — an empty tensor reached Phi's attention and threw a
+reshape error. A pipeline that padded or skipped empty rows would have produced
+complete, plausible, meaningless metrics and **passed the P2 gate on garbage**.
+
+Correct pairing is `microsoft/phi-1_5` (`CodeGenTokenizer`, vocab 50257, eos
+50256), confirmed twice over: the checkpoint's own `config.json` says
+`_name_or_path: microsoft/phi-1_5` with `vocab_size: 51200`, and
+open-unlearning's `configs/model/phi-1_5.yaml` sets `tokenizer_args` to the
+same. `t15_tofu_metrics.get_tok()` now probes the tokenizer and raises if a
+known string encodes to fewer than 4 ids. LOCAL confirmed all local runs load
+tokenizers by base-model id, so no local numbers are affected.
+
+Note also: the bash wrapper exited **0** while the python inside exited **1**.
+The explicit `echo "exit=$?"` is the only reason this was caught — exactly the
+failure the handoff's "never pipe python through tail/grep" rule is about.
+
+**P2 static diff — three concrete divergences at the tokenization layer**, from
+reading `open-unlearning/src/data/utils.py:75-140` against `t11_tofu.encode`:
+
+- **A. EOS in the scored span.** They append `eos` to the scored tokens when
+  absent (`utils.py:113`); we do not. Their mean-logprob denominator is `n+1`
+  and includes one extra, highly predictable token — so their normalized prob
+  is biased upward relative to ours, and the truth ratio inherits it.
+- **B. `add_special_tokens`.** Theirs `True`, ours `False`. Inert for Phi's
+  GPT-2-style tokenizer (no BOS), but **Llama prepends BOS** — so this is
+  harmless now and becomes a real discrepancy at the Llama extension stage.
+  Flagging it before it bites.
+- **C. BPE boundary at the prompt/answer junction.** We tokenize the prompt and
+  `" " + answer` separately and concatenate; they tokenize the joined string and
+  split by `len(prompt_ids)`. BPE merges can straddle that junction, giving
+  different token counts for identical text.
+
+Template itself matches: their `asst_end_tag` ("\n\n") is applied only to
+few-shot examples, not the final response, so both score `Question: {q}\nAnswer:
+{a}` — no trailing-newline difference.
+
+`experiments/p2_tokenization_diff.py` isolates each factor on the same examples
+and reports its individual effect size, rather than leaving a single aggregate
+disagreement unattributed.
+
+**Next:** finish our-side eval -> run their evaluator on the same checkpoint ->
+per-factor + aggregate diff -> pre-register gamma/scope on forget05 -> matrix.
