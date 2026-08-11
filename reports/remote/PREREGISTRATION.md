@@ -63,6 +63,15 @@ Seeds: **0, 1, 2**. Report **mean ± range** (not SD — n=3).
   the headline; open-unlearning's trailing-space convention appears as an
   appendix column. Every record carries `prompt_convention`. See
   `reports/remote/LOG.md` — their trailing space costs ~0.09 ROUGE on Phi-1.5.
+- **Decode protocol is part of the metric definition and is frozen here:**
+  greedy, **64 new tokens**, truncate at the next `"\nQuestion"`, cache-free
+  path (`T15_MAX_NEW=64`, `T15_TRUNCATE=1`). This is not a cosmetic choice —
+  P2 measured leakage ROUGE moving **0.5025 -> 0.5785 (~15% relative)** on a
+  *fixed model* purely from decode length and truncation. Method-vs-method
+  comparison stays valid because the protocol is identical across every cell,
+  but **absolute leakage numbers are not comparable to published TOFU ROUGE**,
+  and any leakage claim ("Nx less generation leakage") must state the decode
+  protocol or it is not checkable.
 - **Generation-leakage ROUGE is reported as distance from the natural floor**,
   not as raw ROUGE. Floor = retain-reference forget R-L = **0.364, 95% CI
   [0.319, 0.414]** (LOCAL, t18). FQ-passing configs sit *below* that floor, so

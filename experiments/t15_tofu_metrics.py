@@ -59,6 +59,14 @@ FORGET_SPLIT = os.environ.get("T15_FORGET_SPLIT", "forget01_perturbed")
 # ROUGE-L recall on Phi-1.5. See reports/remote/LOG.md.
 PROMPT_SUFFIX = os.environ.get("T15_PROMPT_SUFFIX", "")
 
+# Decode protocol. ROUGE-L recall is protocol-sensitive at the ~15% relative
+# level with the model held fixed: recall can only rise with more generated
+# tokens, and truncating the continuation removes text that could still match.
+# Defaults are our original protocol (64 tokens, truncate at the next
+# "Question"); open-unlearning uses 200 tokens and no truncation.
+MAX_NEW = int(os.environ.get("T15_MAX_NEW", "64"))
+TRUNCATE_AT_QUESTION = os.environ.get("T15_TRUNCATE", "1") == "1"
+
 
 def get_tok():
     if TOK_ID:
@@ -113,11 +121,16 @@ def rouge_l_recall(gen, ref):
     return dp[len(g), len(r)] / len(r)
 
 
-def greedy_batch(model, tok, rows, max_new=64, bs=8):
+def greedy_batch(model, tok, rows, max_new=None, bs=8):
     """Batched greedy decoding WITHOUT model.generate / KV cache: the
     cached one-token decode path segfaults intermittently on this
     torch-2.13/cu130/sm_120 setup (crash in rotate_half; see research
-    log's tiny-tensor hot-loop class). Full-sequence forwards only."""
+    log's tiny-tensor hot-loop class). Full-sequence forwards only.
+
+    (Rented-5090 note: that segfault was later traced to the local box's bad
+    CPU core, and generate() is fine here -- this path is kept for exact
+    comparability with the existing local numbers, not for safety.)"""
+    max_new = MAX_NEW if max_new is None else max_new
     texts = []
     for i in range(0, len(rows), bs):
         chunk = rows[i:i + bs]
@@ -145,7 +158,10 @@ def greedy_batch(model, tok, rows, max_new=64, bs=8):
             gen = ids[b, int(lens[b]):int(cur[b])].tolist()
             if tok.eos_token_id in gen:
                 gen = gen[:gen.index(tok.eos_token_id)]
-            texts.append(tok.decode(gen).split("\nQuestion")[0].strip())
+            txt = tok.decode(gen)
+            if TRUNCATE_AT_QUESTION:
+                txt = txt.split("\nQuestion")[0]
+            texts.append(txt.strip())
     return texts
 
 

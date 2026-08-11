@@ -1,0 +1,50 @@
+{
+  "ours": {
+    "stage": "eval",
+    "tag": "p2_ga_ours",
+    "model_dir": "/workspace/memorization/results/p2_phi_ga",
+    "prompt_convention": "ours",
+    "model_utility": 0.5005,
+    "forget_prob": 0.6158,
+    "forget_rouge": 0.5175,
+    "forget_truth_ratio_med": 2.3009,
+    "forget_truth_ratio_stat": 0.4756,
+    "retain_prob": 0.902,
+    "retain_rouge": 0.8648,
+    "retain_truth_ratio_med": 2.1897,
+    "real_authors_prob": 0.4507,
+    "real_authors_rouge": 0.2667,
+    "real_authors_truth_ratio_med": 5.4448,
+    "world_facts_prob": 0.5627,
+    "world_facts_rouge": 0.3393,
+    "world_facts_truth_ratio_med": 13.9365
+  },
+  "ours_ouprompt": {
+    "stage": "eval",
+    "tag": "p2_ga_ours_ouprompt",
+    "model_dir": "/workspace/memorization/results/p2_phi_ga",
+    "prompt_convention": "ou_trailing_space",
+    "model_utility": 0.44,
+    "forget_prob": 0.6158,
+    "forget_rouge": 0.5025,
+    "forget_truth_ratio_med": 2.3009,
+    "forget_truth_ratio_stat": 0.4756,
+    "retain_prob": 0.902,
+    "retain_rouge": 0.6904,
+    "retain_truth_ratio_med": 2.1897,
+    "real_authors_prob": 0.4507,
+    "real_authors_rouge": 0.19,
+    "real_authors_truth_ratio_med": 5.4448,
+    "world_facts_prob": 0.5627,
+    "world_facts_rouge": 0.2766,
+    "world_facts_truth_ratio_med": 13.9365
+  },
+  "theirs": {
+    "forget_truth_ratio": 0.47715124104213286,
+    "forget_Q_A_Prob": 0.6136314082890749,
+    "forget_Q_A_ROUGE": 0.5785448889090964,
+    "model_utility": 0.39945398853270453,
+    "privleak": -93.62499998127498,
+    "extraction_strength": 0.2322399313733662
+  }
+}

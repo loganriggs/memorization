@@ -410,5 +410,55 @@ At 8 methods x 3 splits x 3 seeds = 72 cells, training averages ~32 min/cell
 this assumes GA-like cost; NPO/SimNPO carry a reference-model forward and RMU
 its own overhead, so treat it as a floor rather than a plan.
 
-**Next:** P2 re-diff on the unlearned checkpoint (the real gate) ->
-pre-register gamma/scope on forget05 -> matrix.
+---
+
+## P2 EVALUATOR EQUIVALENCE — CLOSED
+
+Verified on the **unlearned** GA checkpoint (`results/p2_phi_ga`), where mean
+per-token probability is 0.62, not the base model's 0.944 — so agreement can no
+longer be an artifact of saturation.
+
+**Logprob metrics agree, and that is the result that matters:**
+
+    metric               ours@OU prompt   theirs      abs    rel%
+    forget truth ratio           0.4756   0.4772   0.0016     0.3
+    forget Q-A prob              0.6158   0.6136   0.0022     0.4
+
+Forget quality is a KS test over the truth-ratio distribution, so agreement
+there is agreement on the headline metric's input.
+
+**ROUGE fully attributed — three protocol terms, no residual:**
+
+    ours via t15 (cache-free, 64 tok, truncate at "\nQuestion")   0.5025
+    generate(), their prompt, 64 tok                              0.5544
+    generate(), their prompt, 200 tok                             0.5785
+    open-unlearning reported                                      0.5785448889
+
+Matching prompt + scorer + decode length reproduces their number **exactly**.
+The three terms are:
+
+1. **Prompt trailing space** — dominant on the base model (~0.09), and the only
+   one that is a genuine defect rather than a convention.
+2. **Decode length** (64 vs 200 new tokens) — worth 0.024 here. Irrelevant on a
+   memorized model that answers immediately; material on an unlearned one where
+   the answer can emerge late, since ROUGE-L *recall* only rises with more
+   tokens.
+3. **Our decoder's `"\nQuestion"` truncation + cache-free path** — worth ~0.05
+   at equal length. Truncating the continuation removes text that could still
+   match the reference.
+
+**Consequence that must be carried into the results section.** Generation
+leakage ROUGE is **protocol-sensitive at the ~15% relative level** without any
+change to the model. Method-vs-method comparisons stay valid as long as the
+protocol is identical across cells — which the matrix guarantees — but our
+absolute leakage numbers are **not** comparable to published TOFU ROUGE figures,
+and the "4x less generation leakage" style of claim must state the decode
+protocol alongside it or it is not checkable. Added to the pre-registration.
+
+**Limit on what this certifies.** open-unlearning ships no retain reference logs
+for Phi-1.5, so their `forget_quality` returned `None` and the FQ *number* was
+never compared end-to-end — only the truth-ratio distribution it is computed
+from. FQ equivalence is therefore inferred from truth-ratio equivalence plus
+identical KS code, not directly measured.
+
+**Next:** freeze the pre-registration -> forget05 gamma/scope sweep -> matrix.
