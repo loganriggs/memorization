@@ -184,7 +184,8 @@ def stage_relearn():
     import datasets
     model_dir, tag, lr, src = (sys.argv[2], sys.argv[3],
                                float(sys.argv[4]), sys.argv[5])
-    tag = f"{tag}@{lr:g}/{src}"
+    rseed = int(sys.argv[6]) if len(sys.argv) > 6 else 0
+    tag = f"{tag}@{lr:g}/{src}" + (f"/r{rseed}" if rseed else "")
     tok = get_tok()
     forget = list(datasets.load_dataset("locuslab/TOFU", "forget01",
                                         split="train"))
@@ -204,7 +205,7 @@ def stage_relearn():
     model = AutoModelForCausalLM.from_pretrained(
         model_dir, torch_dtype=torch.float32).to(DEVICE)
     opt = torch.optim.AdamW(model.parameters(), lr=lr)
-    g = torch.Generator().manual_seed(0)
+    g = torch.Generator().manual_seed(rseed)
     half_base, curve, hit = 0.429, [], None
 
     def frl():
