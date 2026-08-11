@@ -41,6 +41,7 @@ from t11_tofu import BASE_DIR, DEVICE, fact_margins, get_tok, make_batch
 
 OUT = "results/t17_methods.jsonl"
 STEPS, LR, LAMB, GAMMA, NPO_BETA, SIMNPO_BETA = 200, 1e-5, 1.0, 2.0, 0.1, 2.5
+FLAT_LAM = 0.1
 
 
 def log(rec):
@@ -73,9 +74,18 @@ def stage_train():
                                           split="train"))
         decoy_rows = [{"question": r["question"],
                        "answer": r["perturbed_answer"][0]} for r in pert]
+    elif method == "decoy2":
+        # clean decoys: derangement-shuffle of forget answers (wrong by
+        # construction, TOFU-style, zero eval contamination)
+        shift = 7
+        decoy_rows = [{"question": forget[i]["question"],
+                       "answer": forget[(i + shift) % len(forget)]["answer"]}
+                      for i in range(len(forget))]
 
+    # flatten needs double-backward; SDPA lacks a second derivative
+    attn = {"attn_implementation": "eager"} if method == "flatten" else {}
     model = AutoModelForCausalLM.from_pretrained(
-        BASE_DIR, torch_dtype=torch.float32).to(DEVICE)
+        BASE_DIR, torch_dtype=torch.float32, **attn).to(DEVICE)
     base = AutoModelForCausalLM.from_pretrained(
         BASE_DIR, torch_dtype=torch.float32).to(DEVICE)
     base.eval()
@@ -108,9 +118,25 @@ def stage_train():
             lp, n = seq_logps(model, fids, flab, fm)
             floss = (-2 / SIMNPO_BETA) * F.logsigmoid(
                 -SIMNPO_BETA * lp / n).mean()
-        elif method == "decoy":
+        elif method in ("decoy", "decoy2"):
             dids, dlab, dm = make_batch(tok, [decoy_rows[j] for j in fi])
             floss = t11.batch_ce(model, dids, dlab, dm)
+        elif method == "flatten":
+            # S2: pin + flatten the relearn direction. First-order
+            # anti-relearn: CE_f(theta - eta*g) ~ CE_f - eta*||g||^2,
+            # so penalize ||grad_theta CE_forget||^2 (double backward;
+            # forget half-batch to fit memory).
+            fam, _ = t13.tok_margins(model, fids, flab, fm)
+            pin = torch.stack([F.relu(m + GAMMA).mean()
+                               for m in fam]).mean()
+            hids, hlab, hm = make_batch(tok, [forget[j]
+                                              for j in fi[:4]])
+            ce_f = t11.batch_ce(model, hids, hlab, hm)
+            gs = torch.autograd.grad(ce_f, [p for p in model.parameters()
+                                            if p.requires_grad],
+                                     create_graph=True)
+            gn2 = sum((gg ** 2).sum() for gg in gs)
+            floss = pin + FLAT_LAM * gn2
         else:
             raise ValueError(method)
 
@@ -144,12 +170,14 @@ def stage_train():
 def stage_relearn():
     import datasets
     model_dir, tag = sys.argv[2], sys.argv[3]
+    lr = float(sys.argv[4]) if len(sys.argv) > 4 else LR
+    tag = f"{tag}@{lr:g}"
     tok = get_tok()
     forget = list(datasets.load_dataset("locuslab/TOFU", "forget01",
                                         split="train"))
     model = AutoModelForCausalLM.from_pretrained(
         model_dir, torch_dtype=torch.float32).to(DEVICE)
-    opt = torch.optim.AdamW(model.parameters(), lr=LR)
+    opt = torch.optim.AdamW(model.parameters(), lr=lr)
     g = torch.Generator().manual_seed(0)
     half_base = 0.429  # base forget R-L 0.858 / 2
     curve, hit = [], None
