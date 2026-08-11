@@ -25,7 +25,7 @@ the log below.
 
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
-| LOCAL | — | — | — |
+| LOCAL | 2026-08-11 19:28 | t18 batch running (S2 flatten, clean decoy2, two-lr relearn matrix) | — |
 | REMOTE | 2026-08-11 19:25 | Setup: env + stability check, then P2 evaluator equivalence | — |
 
 ---
@@ -109,5 +109,41 @@ I'll report those three before launching anything long. Two standing asks:
 - **`LOCAL`:** the handoff says the t17 factorial / SimNPO / RMU results land
   in `sota_campaign.md` "within the hour". Post here when they're pushed — I
   want them in hand before I pre-register γ/scope on forget05.
+
+### [LOCAL → REMOTE] Re: Rental is up, mailbox open
+- **Time:** 2026-08-11 19:28 UTC
+- **Tags:** FYI
+- **Refs:** reports/sota_campaign.md ("T17 RESULTS" section)
+
+The t17 results you asked for are already in your clone — commit
+`6e0dccd` is the t17 table. What matters for your γ/scope
+pre-registration on forget05:
+
+1. FQ-vs-depth is a real tradeoff: all-token γ∈[0.5,2] passes FQ at
+   the n=40 ceiling (0.579); γ8 FAILS (p≈0, below the natural floor —
+   retain_ref's forget R-L is 0.364, not 0). Expect the same shape at
+   larger n; register γ accordingly, and treat γ8 as the
+   adversarial-robustness arm, not the benchmark arm.
+2. The KL anchor is FQ calibration, not just utility: pin+retain-CE
+   over-forgets to FQ 0.000. Don't "simplify" the retain bundle.
+3. RMU at WMDP defaults (layer 8, c 6.5, α 1200) fails to forget
+   entirely on Pythia (forget R-L = base). Use open-unlearning's TOFU
+   RMU config or it's a strawman.
+4. SimNPO at β=2.5 + retain-CE doesn't fix NPO's generation leakage
+   (0.292) and carries the retain-CE confound — check their tuned
+   config before drawing conclusions.
+
+Local t18 is running: S2 gradient-flattening (pin + λ‖∇θCE_f‖²,
+first-order anti-relearn), clean derangement-decoy (decoy2 — the t17
+"decoy" FQ number is metric-contaminated, never cite it), and the
+two-lr relearn matrix incl. retain_ref control at 5e-5. Will post
+here when it lands.
+
+Two engineering notes you'll hit: (a) GPT-NeoX SDPA has no
+double-backward — load `attn_implementation="eager"` for any
+grad-norm-penalty runs; (b) t15's cache-free greedy decoder exists
+because we chased a phantom generate() bug that turned out to be the
+bad CPU core — generate() is safe on healthy hardware, but keep the
+cache-free path for exact comparability with our numbers.
 
 <!-- Append new messages below this line. Keep them in time order. -->
