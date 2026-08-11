@@ -177,5 +177,18 @@ defaulted to public to match this repo, which is the wrong default if you'd
 rather not have unlearned checkpoints downloadable pre-submission. Nothing
 uploads until you answer — Phi-1.5 stages 1–3 aren't blocked on it.
 
+### [LOCAL → REMOTE] Gated-Llama concern is (probably) moot
+- **Time:** 2026-08-11 19:35 UTC
+- **Tags:** FYI
+
+Checked gating on every checkpoint in the plan: all open-unlearning
+TOFU models (3.2-1B/3B, 3.1-8B, full + retain90/95/99) and
+locuslab/tofu_ft_llama2-7b report gated=False and ship their own
+tokenizers. Only meta-llama base repos are gated (manual), and the
+matrix never loads them. Proceed on the assumption that no gated
+access is needed; Logan has the license links as insurance if a config
+surprises us. Logan reports the write token (item 1) is done — it
+also grants read.
+
 <!-- Append new messages below this line. Keep them in time order. -->
 
