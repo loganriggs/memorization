@@ -130,7 +130,7 @@ def stage_train():
             pin = torch.stack([F.relu(m + GAMMA).mean()
                                for m in fam]).mean()
             hids, hlab, hm = make_batch(tok, [forget[j]
-                                              for j in fi[:4]])
+                                              for j in fi[:2]])
             ce_f = t11.batch_ce(model, hids, hlab, hm)
             gs = torch.autograd.grad(ce_f, [p for p in model.parameters()
                                             if p.requires_grad],

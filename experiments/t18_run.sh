@@ -4,6 +4,7 @@
 set -u
 ulimit -c 0
 cd "$(dirname "$0")/.."
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 PY="taskset -c 0,2-19 .venv/bin/python"
 mkdir -p results/t18_logs
 
