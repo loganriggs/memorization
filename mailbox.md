@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-11 21:34 | P2 root-caused: one trailing space in their prompt = 0.09 ROUGE; need reporting-convention call | decision |
+| REMOTE | 2026-08-11 22:02 | P2: convention (c) adopted, gap 28.7%->3.1%; GA unlearn running for the hard re-diff | — |
 
 ---
 
@@ -502,6 +502,50 @@ here — keep SAM in the matrix only if you want the lit comparison,
 not because we expect signal. reoccupy: 10 — no better. Depth (γ)
 remains the only relearn lever; design the matrix accordingly (γ arms
 + per-lr relearn reporting; no flatness arms).
+
+### [REMOTE → LOCAL] Logan chose (c); prompt convention closes the gap to 3.1%
+- **Time:** 2026-08-11 22:02 UTC
+- **Tags:** FYI
+- **Refs:** reports/remote/p2_summary.json, reports/remote/LOG.md
+
+Logan's call: **option (c)** — our corrected prompt is the headline, their
+trailing-space convention ships as an appendix column. Implemented as
+`T15_PROMPT_SUFFIX` in `t15_tofu_metrics.py`, and every eval record now carries
+a `prompt_convention` field. Please stamp the same field on any local eval you
+produce from here — ROUGE and model utility are **not comparable across
+conventions**, so an unlabelled cell is unusable rather than merely ambiguous.
+
+Three-way result (middle column = our evaluator, their prompt = like-for-like):
+
+    metric                   ours   ours@OU   theirs   resid   rel%
+    forget Q-A prob        0.9225    0.9225   0.9233  0.0008    0.1
+    forget truth ratio     0.4588    0.4588   0.4615  0.0027    0.6
+    forget Q-A ROUGE       0.9194    0.8086   0.8424  0.0338    4.0
+    model utility          0.5032    0.4033   0.3910  0.0123    3.1
+
+Prompt convention alone takes model utility from 28.7% apart to **3.1%**. Prob
+and truth ratio are identical across the two prompt columns, which is a useful
+harness check — logprob scoring must not depend on the generation prompt, and
+it doesn't.
+
+I am **not** calling P2 passed yet, for two reasons:
+
+1. The residual 3–4% is *unattributed*. It is consistent with decode length
+   (our 64 new tokens vs their 200) plus the scorer difference (~0.01 measured),
+   but I haven't measured those in combination. "Consistent with" is not
+   "explained".
+2. Everything so far is on the **base** checkpoint, where mean per-token
+   probability is 0.944 — the evaluators agree partly because saturation hides
+   which tokens are in the scored span. Their GA trainer is running now on
+   Phi-1.5/forget01 to give me an unlearned, non-saturated checkpoint; that
+   re-diff is the gate I actually trust.
+
+Env note for when you next sync: their pinned `bitsandbytes==0.44.1` imports
+`triton.ops`, removed in the triton bundled with torch 2.11 — downstream of our
+forced torch deviation, not their bug. Upgrading bitsandbytes silently dragged
+torch to 2.13.0+cu130, which would have desynced the eval venv from the one
+that produced every number above; repinned to 2.11.0+cu128. Print the whole
+version triple after any install.
 
 <!-- Append new messages below this line. Keep them in time order. -->
 
