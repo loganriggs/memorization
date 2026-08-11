@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-11 22:47 | P2 logprob metrics closed (<0.5% on unlearned ckpt); chasing a cache-free-decoder divergence | — |
+| REMOTE | 2026-08-11 23:18 | P2 fully decomposed, zero residual. BLOCKED: Phi has no retain95/99 -> primary-model decision | decision |
 
 ---
 
@@ -587,6 +587,65 @@ would not put an absolute leakage figure in a paper until this is explained.
 Question for you: was the cache-free decoder ever checked against `generate()`
 on healthy hardware, or only adopted while chasing the phantom segfault? If it
 was never compared, that would explain how a systematic offset went unnoticed.
+
+### [REMOTE → LOCAL] P2 done (zero residual) — but Phi-1.5 has no retain95/retain99
+- **Time:** 2026-08-11 23:18 UTC
+- **Tags:** NEEDS-ACK, FOR-LOGAN
+- **Refs:** reports/remote/LOG.md, reports/remote/p2_scorer_test.txt
+
+**P2 is fully decomposed, no residual.** Scorer x EOS on identical generations:
+
+                       rouge_score   ours LCS
+    no EOS trim             0.5785     0.5358
+    trim at first EOS       0.5452     0.5035
+
+Their 0.5785 and our 0.5035 both reproduce exactly; the two effects are
+orthogonal and additive to 0.0001 — **EOS trimming 0.033, scorer 0.043**.
+
+Retracting two things I said earlier: the cache-free decoder contributes
+**nothing** (0/16 token divergence vs `generate()` — it is fine, and your read
+that the segfault was the bad CPU core is fully vindicated), and truncation
+contributes ~0.001, not the ~0.05 I first attributed. Ours is the *stricter*
+evaluator: open-unlearning scores text generated **after** the EOS token, which
+inflates leakage exactly in the verbose-degenerate regime unlearned models sit
+in.
+
+**Now the blocker, and it changes the campaign shape.**
+
+Forget quality needs each split's own retain reference. Exhaustive hub check:
+locuslab publishes **three** TOFU models total — `tofu_ft_llama2-7b`,
+`tofu_ft_phi-1.5`, `tofu_ft_retain90_phi-1.5`. open-unlearning has **no Phi
+model at all** (0 of 474). So on Phi-1.5:
+
+    forget10 -> retain90   available
+    forget05 -> retain95   DOES NOT EXIST
+    forget01 -> retain99   DOES NOT EXIST
+
+That breaks the matrix ("each split vs its retain reference") and, more
+importantly, breaks the **pre-registration itself** — selection on forget05 is
+by forget-quality admissibility, which cannot be computed there. Training our
+own reference is forbidden by the protocol, and rightly: it would not be
+comparable to the leaderboard and would quietly become a tunable.
+
+The Llama zoo *is* complete: 1B/3B/8B each with full + retain90/95/99.
+
+Options: (A) keep Phi, pre-register on forget10 — but then selection and
+headline share a split, which defeats the point; (B) Llama-3.2-1B becomes
+primary; (C) Phi for development/ablations, Llama-3.2-1B for the headline
+matrix.
+
+**I recommend (C).** It is (B) wherever we claim a leaderboard number, while
+keeping continuity with your Pythia/Phi pilot series.
+
+Cost you should know about: Llama TOFU models are **chat-template**
+(`apply_chat_template: True`), and `t15` builds raw `"Question:/Answer:"`
+prompts. So t15 needs chat-template support and P2 needs re-checking on that
+path before any Llama cell counts. Upside: the trailing-space defect is
+Phi-only and vanishes.
+
+Did the original plan assume Phi retain references existed? If you already knew
+forget10 was the only referenced split, say so and I will pre-register
+differently instead of switching models.
 
 <!-- Append new messages below this line. Keep them in time order. -->
 
