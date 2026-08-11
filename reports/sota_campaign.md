@@ -190,6 +190,55 @@ unstable CPU core (logical CPU 1/core 4); everything runs pinned via
 taskset (see runner). Owner action: microcode/BIOS check, per-core
 stress test, possible RMA.
 
+## T17 RESULTS — fairness factorial, SimNPO, RMU, relearn controls
+(2026-08-11, Pythia-410M/forget01, 200 steps each, seed 0)
+
+| tag | FQ p | forget R-L | retain R-L | relearn→½base @1e-5 |
+|---|---|---|---|---|
+| NPO + retain-CE | 0.579 | 0.200 | 0.917* | 10 |
+| NPO + KL/hinge | 0.165 | 0.312 | 0.857 | **5** |
+| pin γ2 + KL/hinge (ours) | 0.579 | 0.049 | 0.848 | 15 |
+| pin γ2 + retain-CE | 0.000 | 0.011 | 0.980* | 15 |
+| SimNPO (β2.5, +CE) | 0.405 | 0.292 | 0.981* | 10 |
+| RMU (WMDP defaults) | 0.001 | 0.858 | 0.868 | 5 |
+| decoy (CONTAMINATED FQ) | (0.990) | 0.336 | 0.856 | 5 |
+| retain_ref control | ref | 0.364 | 0.830 | 5 |
+
+*retain-CE confound (trains retain facts above base 0.867).
+
+Findings:
+1. **The factorial cleanly attributes each property.** Generation
+   leakage follows the FORGET objective (pin cells 0.011–0.049; NPO
+   cells 0.200–0.312, regardless of anchor) — NPO's leak is intrinsic
+   grade-2 suppression, not an anchoring artifact. Relearn resistance
+   also follows the pin (15 vs 5–10).
+2. **NPO's good numbers were partly purchased by its confound**: with
+   honest KL/hinge anchoring, NPO gets WORSE on both FQ (0.579→0.165)
+   and leakage (0.200→0.312), and relearns as fast as the never-knew
+   control (5 steps).
+3. **The KL anchor is also FQ calibration**: pin+retain-CE over-forgets
+   (FQ 0.000) where pin+KL passes at ceiling — the anchor keeps the
+   pin inside the natural-floor zone, not just utility-safe.
+4. **RMU at WMDP defaults fails to forget on this setup** (forget R-L
+   0.858 = base) — red-team #4 vindicated; no claim vs RMU until it
+   runs at open-unlearning's TOFU config (rented phase).
+5. **SimNPO (untuned β=2.5) does not fix NPO's leakage here** (0.292)
+   and carries the same retain-CE confound.
+6. **Decoy pilot: no relearn resistance** (5 steps — confident-wrong
+   answers give large gradients toward truth; registered prediction
+   (ii) confirmed). Its FQ 0.990 is INVALID (trains on the metric's
+   perturbed answers). Decoy is a naturalness tool, not a
+   super-unlearning route.
+7. **Super-unlearning, honestly split**: time-to-recovery is 3× the
+   never-knew control (15 vs 5 steps) — but the control starts at the
+   generic floor (0.364), near the ½-base threshold (0.429). At
+   matched knowledge level (from the floor), marginal relearn RATE ≈
+   control (+0.11 vs +0.09 per 5 steps) — consistent with the T6b toy
+   result. Strong-sense (rate) super-unlearning remains open: that is
+   the S2 gradient-flattening target. Also pending red-team #6: second
+   lr, familiarity confound (which cuts in our favor here — unlearned
+   models saw the questions and STILL recover 3× slower end-to-end).
+
 ## Reconciliation with the LP session (2026-08-11)
 
 Their battery confirmed: LP-edited models relearn at masking speed
