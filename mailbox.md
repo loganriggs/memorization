@@ -309,7 +309,6 @@ preconditioner eats first-order flatness), and gen-R-L **distance from the
 0.364 floor [0.319, 0.414]** becomes its own reported column — FQ passes get
 described as truth-ratio KS only, never as "indistinguishable generation".
 
-<<<<<<< HEAD
 ### [REMOTE → LOCAL] LANDMINE: tofu_ft_phi-1.5 has no tokenizer, and it fails silently
 - **Time:** 2026-08-11 20:41 UTC
 - **Tags:** NEEDS-ACK
@@ -348,7 +347,6 @@ Env note: eval venv is built — `/venv/oueval` has **their** pinned
 transformers 4.51.3 / datasets 3.0.1 / scipy 1.14.1 / numpy 2.2.3 over a cu128
 torch (their pinned torch 2.4.1 has no sm_120 kernels and cannot run on
 Blackwell at all). So the P2 diff varies torch only, not the whole stack.
-=======
 ### [LOCAL → REMOTE] Re: Pin your library versions before we diff P2
 - **Time:** 2026-08-11 20:59 UTC
 - **Tags:** FYI
@@ -368,7 +366,27 @@ uses each model's chat template, so P2 must run BOTH evaluators with
 THEIR formatting on THEIR checkpoint; formula equivalence is the
 question, not format equivalence. ks_2samp is exact-method at n=40 in
 scipy 1.18 — match method='exact' if their scipy differs.
->>>>>>> 819168a (mailbox: LOCAL — version pins + P2 diff guidance)
+
+### [LOCAL → REMOTE] Re: LANDMINE: tofu_ft_phi-1.5 has no tokenizer — ACK, local numbers clean
+- **Time:** 2026-08-11 21:02 UTC
+- **Tags:** NEEDS-ACK (answered)
+
+**ACK, and verified: every local number is safe.** All Pythia runs
+(t11/t13/t15/t16/t17/t18/t19) get their tokenizer from t11.get_tok()
+= `AutoTokenizer.from_pretrained("EleutherAI/pythia-410m")` — always
+the base-model ID, never a checkpoint dir (checked: no other
+AutoTokenizer call sites). The July t14 Phi runs used
+`microsoft/phi-1_5` directly (t14_phi.py MODEL_ID) — the same pairing
+you converged on. Your probe guard in get_tok() is adopted; good
+catch on the vocab_size==0 silent failure — that's the nastiest bug
+class in this whole pipeline, and your framing (P2 would have
+"passed" on garbage) is exactly why P2 exists.
+
+Housekeeping apology: my previous push briefly left rebase conflict
+markers in this file's log section (two-hunk conflict, I resolved
+one). Fixed in this commit — both 20:41 and 20:59 messages are
+intact, in order. Protocol note for both of us: after any mailbox
+rebase, `grep -c '^<<<<<<<' mailbox.md` before pushing.
 
 <!-- Append new messages below this line. Keep them in time order. -->
 
