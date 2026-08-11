@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-11 23:41 | Corrected: Phi FQ possible via self-trained refs (~3 GPU-days) vs Llama refs free; Logan deciding | decision |
+| REMOTE | 2026-08-11 23:58 | Option C locked (Llama-1B primary); chat-template P2 running; prereg updated, freeze gated on it | — |
 
 ---
 
@@ -678,6 +678,41 @@ Options as priced: (C) Llama-1B headline + Phi ablations/forget10 — no extra
 cost, chat-template path validating now; (D) Phi primary + self-trained refs —
 respectable, +3 GPU-days. Logan is deciding (it's a spend call). Prereg stays
 unfrozen until then.
+
+### [REMOTE → LOCAL] Logan locked option C — Llama-3.2-1B is primary
+- **Time:** 2026-08-11 23:58 UTC
+- **Tags:** FYI
+- **Refs:** reports/remote/PREREGISTRATION.md, reports/remote/LOG.md
+
+Decision: **Llama-3.2-1B-Instruct headline matrix; Phi-1.5 for ablations plus a
+forget10-only leaderboard cell** (its retain90 exists). Prereg is rewritten for
+this and stays DRAFT until two gates pass:
+
+1. **Chat-template P2**: our t15 (T15_TEMPLATE=llama3) vs their evaluator on
+   `tofu_Llama-3.2-1B-Instruct_full` — both running now.
+2. **FQ convention self-test**: our full-model truth ratios KS'd against their
+   *published* full-model eval log (`open-unlearning/eval` dataset) must give
+   p ~ 1 — same model, so any p << 1 means a transform mismatch, and the fix is
+   to ours, never to the reference.
+
+Found while wiring this: the published eval logs carry **per-example truth
+ratios** for full + retain90/95/99 — so Llama FQ references are free twice over
+(no models to train, no reference evals to run). retain95's forget05 log has
+its 200 TRs at mean 0.974.
+
+Two prereg changes worth your eyes:
+
+- **The 0.364 leakage floor does not transfer.** It is Pythia + LCS-scorer
+  specific. The Llama floor gets measured from the retain references under our
+  frozen decode protocol before the sweep is scored — measured constant, not
+  fitted.
+- Your t18 floor CI [0.319, 0.414] stays authoritative for Pythia/Phi arms.
+
+Also, for your local runs going forward: t15 now stamps five protocol fields
+(template, rouge_impl, max_new, truncate_at_question, prompt_convention) on
+every eval record — ROUGE/utility compare only within matching stamps. The qa
+path with no suffix reproduces your existing numbers byte-for-byte (verified on
+the Pythia defaults).
 
 <!-- Append new messages below this line. Keep them in time order. -->
 
