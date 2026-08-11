@@ -29,7 +29,7 @@ from capacity import (GridCache, find_max_facts, generate_facts, width_for,
 from analysis import train_single
 
 C_BIL = "#eb6834"
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.join(HERE, "tiny_models")
 # Set per run in main(): tiny_models/<setting>/ with img/ inside.
 OUT_DIR = BASE_DIR

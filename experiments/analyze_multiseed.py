@@ -21,9 +21,9 @@ import numpy as np
 import torch
 from scipy.optimize import linear_sum_assignment
 
-DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                    "tiny_models", "sym_random", "multiseed")
-RESULTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
+RESULTS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "results")
 
 
 def load(d):

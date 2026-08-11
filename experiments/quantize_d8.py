@@ -15,7 +15,7 @@ import torch
 
 from capacity import generate_facts
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIR = os.path.join(HERE, "tiny_models", "sym_random")
 D_MODEL = 8
 V_IN, V_OUT, N = 16, 8, 256

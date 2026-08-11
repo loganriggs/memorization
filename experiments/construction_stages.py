@@ -20,7 +20,7 @@ from h12b_repair import h9b_solve
 from h12c_fast import fast_repair
 import tiny_report
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(HERE, "tiny_models", "construction")
 IMG = os.path.join(OUT, "img")
 

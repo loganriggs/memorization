@@ -42,7 +42,7 @@ LR = 1e-2
 PATIENCE = 100
 PRECISION_FRACTION = 0.02
 
-RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
+RESULTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "results")
 CACHE_PATH = os.path.join(RESULTS_DIR, "grid_cache.json")
 
 ARCHS = ("mlp", "bilinear", "swiglu")

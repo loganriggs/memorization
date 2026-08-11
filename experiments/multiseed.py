@@ -17,7 +17,7 @@ from sparsity_d8 import (accuracy, clone, LAMBDA, PRUNE_FRAC, L1_EPOCHS,
                          FT_EPOCHS, LR, DEVICE)
 from sparsity_d8_donly import train_d_penalty
 
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                    "tiny_models", "sym_random", "multiseed")
 DVALS = range(2, 9)
 N_SEEDS = 10
