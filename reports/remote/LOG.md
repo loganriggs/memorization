@@ -375,6 +375,40 @@ their 200) and scorer (our LCS recall vs `rouge_score` + Porter stemmer, worth
 yet measured *in combination*, so 3-4% is currently unattributed rather than
 explained. Not claiming a clean pass on that basis.
 
-**Next:** GA checkpoint -> P2 re-diff on it (the real gate, where saturation no
-longer hides span differences) -> pre-register gamma/scope on forget05 ->
-matrix.
+**GA baseline trained** (their `unlearn/tofu/default`, `trainer=GradAscent`,
+Phi-1.5 / forget01, 2 epochs): exit 0, `train_runtime` 360 s, final
+`train_loss` **-0.3033** (negative is correct for gradient ascent). Model saved
+to `results/p2_phi_ga`, pushed to HF as
+`phi-1.5/forget01/ga_openunlearning_2ep/seed0`. Their *training* pipeline
+therefore runs on Blackwell, which the matrix depends on.
+
+**GPU sizing — two findings, act on both before committing GPU-days.**
+
+1. **VRAM is at the edge: 31,860 / 32,607 MiB (97.7%)** for Phi-1.5 full FT with
+   `paged_adamw_32bit` at `per_device_train_batch_size=4`. The reassuring part:
+   VRAM scales with batch and sequence length, **not** dataset size, so
+   forget05/forget10 do not raise it. The unreassuring part: there is no
+   headroom for fragmentation, and the Llama-3B extension will not fit this way.
+2. **FIDELITY BUG IN MY OWN RUN.** Their published recipe is
+   `per_device_train_batch_size: 8` x `gradient_accumulation_steps: 4` =
+   **effective batch 32**. I ran `per_device=4` with their default accum 4 =
+   **effective batch 16** — half the published baseline. Harmless for P2 (which
+   needs only *an* unlearned checkpoint) but it would have silently weakened
+   every baseline in the matrix, which is exactly the "strawman baseline"
+   failure the red-team warned about. **Matrix runs must use `per_device=4` with
+   `gradient_accumulation_steps=8`** to reconstruct effective batch 32 under the
+   VRAM ceiling, since per_device=8 will not fit.
+
+**Wall-clock projection** (forget01 = 40 rows took 360 s; splits are 40/200/400
+rows, and GA time scales with rows):
+
+    forget01  ~6 min      forget05  ~30 min     forget10  ~60 min
+
+At 8 methods x 3 splits x 3 seeds = 72 cells, training averages ~32 min/cell
+=> ~38 GPU-hours, plus ~10 min/cell evaluation => ~12 GPU-hours. Total
+**~2.1 GPU-days**, consistent with the handoff's 2-3 GPU-day estimate. Note
+this assumes GA-like cost; NPO/SimNPO carry a reference-model forward and RMU
+its own overhead, so treat it as a floor rather than a plan.
+
+**Next:** P2 re-diff on the unlearned checkpoint (the real gate) ->
+pre-register gamma/scope on forget05 -> matrix.
