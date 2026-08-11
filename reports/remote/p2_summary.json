@@ -1,0 +1,37 @@
+{
+  "note": "ours_ouprompt is our evaluator run with open-unlearning's trailing-space prompt; compare that column to theirs",
+  "rows": [
+    {
+      "metric": "forget Q-A prob",
+      "ours_ourprompt": 0.9225,
+      "ours_ouprompt": 0.9225,
+      "theirs": 0.9232944622635841,
+      "residual_abs": 0.0008,
+      "residual_rel_pct": 0.1
+    },
+    {
+      "metric": "forget truth ratio",
+      "ours_ourprompt": 0.4588,
+      "ours_ouprompt": 0.4588,
+      "theirs": 0.46146435248050494,
+      "residual_abs": 0.0027,
+      "residual_rel_pct": 0.6
+    },
+    {
+      "metric": "forget Q-A ROUGE",
+      "ours_ourprompt": 0.9194,
+      "ours_ouprompt": 0.8086,
+      "theirs": 0.842438545341804,
+      "residual_abs": 0.0338,
+      "residual_rel_pct": 4.0
+    },
+    {
+      "metric": "model utility",
+      "ours_ourprompt": 0.5032,
+      "ours_ouprompt": 0.4033,
+      "theirs": 0.3909850911019163,
+      "residual_abs": 0.0123,
+      "residual_rel_pct": 3.1
+    }
+  ]
+}

@@ -352,5 +352,29 @@ to 2.11.0+cu128; bitsandbytes kept at the newer version.
 `src/train.py:62` calls `trainer.save_model(output_dir)` explicitly, so the
 final model is written.
 
-**Next:** GA checkpoint -> P2 re-diff on it (the real gate) -> pre-register
-gamma/scope on forget05 -> matrix.
+**Three-way P2 comparison** (`reports/remote/p2_summary.json`). Middle column is
+*our* evaluator run with *their* trailing-space prompt — the like-for-like
+comparison against theirs:
+
+    metric                   ours   ours@OU   theirs   resid   rel%
+    forget Q-A prob        0.9225    0.9225   0.9233  0.0008    0.1
+    forget truth ratio     0.4588    0.4588   0.4615  0.0027    0.6
+    forget Q-A ROUGE       0.9194    0.8086   0.8424  0.0338    4.0
+    model utility          0.5032    0.4033   0.3910  0.0123    3.1
+
+Holding the prompt convention constant collapses the model-utility gap from
+**28.7% to 3.1%**, and confirms the attribution: the prompt was the dominant
+term. Prob and truth ratio are byte-identical across the two prompt columns, as
+they must be — logprob scoring never touches the generation prompt, so their
+invariance is a useful internal consistency check on the harness.
+
+Residual after the prompt is controlled: ~0.034 ROUGE (4.0%) and 0.012 utility
+(3.1%). Remaining known differences are decode length (our 64 new tokens vs
+their 200) and scorer (our LCS recall vs `rouge_score` + Porter stemmer, worth
+~0.01 from the earlier 2x2). Both are plausible at this magnitude; neither is
+yet measured *in combination*, so 3-4% is currently unattributed rather than
+explained. Not claiming a clean pass on that basis.
+
+**Next:** GA checkpoint -> P2 re-diff on it (the real gate, where saturation no
+longer hides span differences) -> pre-register gamma/scope on forget05 ->
+matrix.
