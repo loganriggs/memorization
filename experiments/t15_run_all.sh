@@ -5,7 +5,11 @@
 set -u
 ulimit -c 0   # no core dumps: a crashed 6GB process must not wedge the next one
 cd "$(dirname "$0")/.."
-PY=.venv/bin/python
+# Logical CPU 1 (physical core 4) is unstable on this box: kernel log
+# 2026-08-11 attributes every python segfault/SIGILL across unrelated
+# libraries to it. Pin all work off that core until it's fixed in
+# BIOS/microcode or the CPU is serviced.
+PY="taskset -c 0,2-19 .venv/bin/python"
 mkdir -p results/t15_logs
 
 evaluate () {  # evaluate <model_dir> <tag>
