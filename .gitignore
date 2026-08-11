@@ -1,0 +1,9 @@
+# Large / generated artifacts
+.venv/
+results/
+ref_repo/
+__pycache__/
+*.pyc
+
+# Local editor/agent settings
+.claude/settings.local.json
