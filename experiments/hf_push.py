@@ -22,7 +22,11 @@ import os
 import subprocess
 import sys
 
-REPO = os.environ.get("HF_CKPT_REPO", "loganriggs/memorization-unlearning")
+def _default_repo():
+    """<hf-username>/memorization-unlearning -- the HF account is Elriggs, not the
+    GitHub handle, so resolve it from the token rather than hardcoding either."""
+    from huggingface_hub import HfApi
+    return f"{HfApi().whoami()['name']}/memorization-unlearning"
 
 # Optimizer/scheduler state is large and never needed downstream; evals only load weights.
 IGNORE = ["optimizer.pt", "scheduler.pt", "rng_state*", "*.lock", "trainer_state.json"]
@@ -57,13 +61,17 @@ def main():
               "model": a.model, "split": a.split,
               "method": a.method, "seed": a.seed}
 
+    repo = os.environ.get("HF_CKPT_REPO") or _default_repo()
     api = HfApi()
-    api.create_repo(REPO, repo_type="model", exist_ok=True, private=False)
+    # Private by default: publishing pre-submission checkpoints is irreversible
+    # (scraped/mirrored), flipping private->public later is not. HF_CKPT_PUBLIC=1 opts out.
+    api.create_repo(repo, repo_type="model", exist_ok=True,
+                    private=os.environ.get("HF_CKPT_PUBLIC") != "1")
 
     if not a.force:
         try:
             prev = json.loads(open(api.hf_hub_download(
-                REPO, f"{path}/PUSHED.json"), encoding="utf-8").read())
+                repo, f"{path}/PUSHED.json"), encoding="utf-8").read())
             if prev.get("repo_commit") == marker["repo_commit"]:
                 print(f"skip {path} (already pushed at {prev['repo_commit']})")
                 return
@@ -74,11 +82,11 @@ def main():
         json.dump(marker, f, indent=2)
 
     api.upload_folder(
-        repo_id=REPO, repo_type="model", folder_path=a.local_dir,
+        repo_id=repo, repo_type="model", folder_path=a.local_dir,
         path_in_repo=path, ignore_patterns=IGNORE,
         commit_message=f"{a.model} {a.split} {a.method} seed{a.seed} @ {marker['repo_commit']}",
     )
-    print(f"pushed {a.local_dir} -> {REPO}/{path}")
+    print(f"pushed {a.local_dir} -> {repo}/{path}")
 
 
 if __name__ == "__main__":
