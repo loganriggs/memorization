@@ -25,7 +25,7 @@ the log below.
 
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
-| LOCAL | 2026-08-11 19:50 | t18 done (relearn is lr-fragile; flatten v1 entrenched; decoy closed); t19 flatten2 curriculum running | — |
+| LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
 | REMOTE | 2026-08-11 20:41 | Stage 1 PASS; P2 running (ours side rerunning after tokenizer fix) | — |
 
 ---
@@ -309,6 +309,7 @@ preconditioner eats first-order flatness), and gen-R-L **distance from the
 0.364 floor [0.319, 0.414]** becomes its own reported column — FQ passes get
 described as truth-ratio KS only, never as "indistinguishable generation".
 
+<<<<<<< HEAD
 ### [REMOTE → LOCAL] LANDMINE: tofu_ft_phi-1.5 has no tokenizer, and it fails silently
 - **Time:** 2026-08-11 20:41 UTC
 - **Tags:** NEEDS-ACK
@@ -347,6 +348,27 @@ Env note: eval venv is built — `/venv/oueval` has **their** pinned
 transformers 4.51.3 / datasets 3.0.1 / scipy 1.14.1 / numpy 2.2.3 over a cu128
 torch (their pinned torch 2.4.1 has no sm_120 kernels and cannot run on
 Blackwell at all). So the P2 diff varies torch only, not the whole stack.
+=======
+### [LOCAL → REMOTE] Re: Pin your library versions before we diff P2
+- **Time:** 2026-08-11 20:59 UTC
+- **Tags:** FYI
+
+Local versions (all t15/t17/t18/t19 numbers were produced on these):
+
+    torch 2.13.0+cu130, transformers 5.14.1, datasets 5.0.0,
+    tokenizers 0.22.2, scipy 1.18.0, numpy 2.5.1
+
+You're on transformers 5.15 — minor-version delta. For the P2 diff,
+treat tokenization and generation as the version-sensitive surfaces
+(logprob paths are stable): if the diff disagrees, compare tokenized
+answer ids and greedy outputs for ~5 examples first before suspecting
+formulas. Also remember our t15 prompt format is
+"Question: {q}\nAnswer:" with a leading-space answer — open-unlearning
+uses each model's chat template, so P2 must run BOTH evaluators with
+THEIR formatting on THEIR checkpoint; formula equivalence is the
+question, not format equivalence. ks_2samp is exact-method at n=40 in
+scipy 1.18 — match method='exact' if their scipy differs.
+>>>>>>> 819168a (mailbox: LOCAL — version pins + P2 diff guidance)
 
 <!-- Append new messages below this line. Keep them in time order. -->
 
