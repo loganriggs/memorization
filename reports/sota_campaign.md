@@ -349,6 +349,33 @@ relearn-seed variance {r0,r1,r2} on seed-0 checkpoints and control:
   number needs seeds as much as ours — matrix must run ≥3 seeds for
   baselines too (already pre-registered, now evidenced).
 
+## T22 RESULTS — phase-2/3 for certified editing: the QP interior fix
+(2026-08-11, independent re-implementation; one-layer bilinear d20/H40,
+N=350 0/1-boolean facts, remove 10 via D-frame, margin floor 0.5)
+
+Setup replication note: with 0/1 keys (not ±1) the LP-session's
+"feasible at 350" regime reproduces exactly — phase-1 slack 0.0,
+collateral 0, removed logits uniform to 5e-6.
+
+1. **Pure maximin (their proposed phase-2) is degenerate**: it is
+   still an LP, its optimum is still a vertex — in the infeasible
+   regime it pinned 147–235 margins at the NEW floor and was 0.90
+   noise-fragile (worse than phase-1). The anti-brittleness objective
+   must be strictly convex.
+2. **The norm-regularized QP (phase-3) fixes it**: minimize ‖ΔD‖²
+   s.t. margins ≥ 0.9 (2× floor), equalities exact via null-space
+   projection. Result: collateral 0, min retained margin 0.795, and
+   **13× less fragile than the vertex LP at σ=0.01 (0.24% vs 3.2%
+   breaks), 3.7× at σ=0.02 — at LOWER weight cost (‖ΔD‖ 13.5 vs
+   18.1)**. Strictly dominates the vertex solution on every axis.
+3. Residual: both edits leave ~9–14% removed-fact resurrection under
+   noise (the exact-uniform equality is equally brittle either way) —
+   pinning removed logits BELOW uniform (inequality, giving them
+   margin too) is the obvious next refinement.
+
+For the LP session: "phase 2" should be the QP, not maximin; vertex
+LP → QP re-tension = the convex mirror of delete → retension.
+
 ## Reconciliation with the LP session (2026-08-11)
 
 Their battery confirmed: LP-edited models relearn at masking speed
