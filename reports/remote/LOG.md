@@ -128,5 +128,64 @@ few-shot examples, not the final response, so both score `Question: {q}\nAnswer:
 and reports its individual effect size, rather than leaving a single aggregate
 disagreement unattributed.
 
-**Next:** finish our-side eval -> run their evaluator on the same checkpoint ->
-per-factor + aggregate diff -> pre-register gamma/scope on forget05 -> matrix.
+**Our-side eval on `locuslab/tofu_ft_phi-1.5` / forget01 — done** (exit 0,
+`reports/remote/p2_ours.json`). forget prob .9225 / R-L .9194 / TR-med 2.276;
+retain .9149 / .9021 / 2.207; real_authors .4606 / .2600 / 5.391; world_facts
+.5659 / .3436 / 14.276; **model utility 0.5032**. forget ~= retain and both high
+is the expected signature of the *pre-unlearning* checkpoint.
+
+**P2 per-factor result — PASS at the logprob level.**
+
+    C. BPE boundary mismatch:      0/20 examples
+    B. add_special_tokens adds:    0 tokens (Phi/GPT-2-style)
+    ours   mean logprob:  -0.057559
+    theirs mean logprob:  -0.057314   delta = 0.000938
+    theirs w/o EOS:       -0.058456   (EOS worth 0.001497)
+    normalized prob: ours 0.944846 vs theirs 0.945086
+
+All three predicted divergences are numerically immaterial on this checkpoint.
+
+**Correction — my first factor-diff run was wrong, and the bug was mine.** It
+reported a 0.587 logprob gap and appeared to show their evaluator dropping the
+first answer token. Cause: their `asst_start_tag` ends with a space, so
+`tok(wrapped)` ends in a standalone `' '` token while `tok(wrapped + answer)`
+merges it into `' The'`. My harness reconstructed their input as
+`prompt_ids + scored_ids`, fabricating a sequence that never occurs in their
+pipeline (doubled space, dropped first word). Fixed by scoring the true joined
+sequence with a label start index. **Their evaluator was never wrong here** --
+worth stating plainly, since the first result would have had us "fixing" our
+code to match an artifact.
+
+**Real but immaterial:** their scored span genuinely does exclude the answer's
+first token (masked as prompt by that same space-merge). It does not move the
+mean here because this checkpoint is memorized, so nearly every token sits at
+logprob ~0. **Caveat for the matrix:** on *unlearned* checkpoints the per-token
+distribution is far less saturated, so first-token exclusion could matter more.
+Equivalence verified on the base checkpoint is not automatically equivalence on
+unlearned ones -- P2 should be re-run against one unlearned checkpoint before
+the numbers are treated as interchangeable.
+
+**Env fidelity — the eval venv is now their full pin set, minus torch only.**
+Two failures (`No module named 'deepspeed'`, then `No module named 'sklearn'`)
+came from my hand-picking packages for `/venv/oueval` instead of installing
+their `requirements.txt`. I initially recorded the deepspeed failure here as an
+upstream packaging bug; **that was wrong** -- `deepspeed==0.15.4` and
+`scikit-learn==1.5.2` are both in their requirements. My earlier grep filtered
+the file to a few package names and I concluded from its absence there. Their
+packaging is fine.
+
+Fixed by installing `requirements.txt` wholesale with `torch==2.4.1` stripped,
+so the venv now runs their exact pins (transformers 4.51.3, deepspeed 0.15.4,
+sklearn 1.5.2, datasets 3.0.1, scipy 1.14.1, numpy 2.2.3, accelerate 0.34.2)
+over torch 2.11.0+cu128. Torch remains the single unavoidable deviation --
+2.4.1 has no `sm_120` kernels and cannot execute on Blackwell.
+
+One real upstream note stands: `src/trainer/unlearn/rmu.py:5` imports deepspeed
+unconditionally at module level and is reached from `src/eval.py` via
+`trainer/__init__.py`, so deepspeed is required even for pure evaluation. That
+is a coupling worth knowing, not a missing dependency. Also: current deepspeed
+(installed before I read their pin) breaks transformers 4.51.3 with a circular
+import -- stay on their 0.15.4.
+
+**Next:** their full evaluator run -> aggregate metric diff -> re-verify on an
+unlearned checkpoint -> pre-register gamma/scope on forget05 -> matrix.

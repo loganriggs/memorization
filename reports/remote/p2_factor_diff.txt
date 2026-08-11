@@ -1,0 +1,11 @@
+=== FACTOR DIFF (corrected harness) ===
+Loading weights:   0%|          | 0/341 [00:00<?, ?it/s]Loading weights:   1%|          | 2/341 [00:00<00:53,  6.35it/s]Loading weights:   3%|▎         | 9/341 [00:00<00:12, 25.82it/s]Loading weights:  18%|█▊        | 61/341 [00:00<00:01, 171.02it/s]Loading weights:  27%|██▋       | 93/341 [00:00<00:01, 212.02it/s]Loading weights:  35%|███▌      | 121/341 [00:00<00:00, 226.36it/s]Loading weights:  44%|████▎     | 149/341 [00:00<00:00, 198.97it/s]Loading weights:  50%|█████     | 172/341 [00:01<00:00, 206.87it/s]Loading weights:  57%|█████▋    | 195/341 [00:01<00:00, 208.17it/s]Loading weights:  64%|██████▍   | 218/341 [00:01<00:00, 209.95it/s]Loading weights:  71%|███████   | 241/341 [00:01<00:00, 211.60it/s]Loading weights:  77%|███████▋  | 263/341 [00:01<00:00, 171.25it/s]Loading weights:  85%|████████▍ | 289/341 [00:01<00:00, 189.44it/s]Loading weights:  92%|█████████▏| 313/341 [00:01<00:00, 169.64it/s]Loading weights: 100%|██████████| 341/341 [00:01<00:00, 178.17it/s]
+model=locuslab/tofu_ft_phi-1.5 tok=microsoft/phi-1_5 split=forget01_perturbed n=20
+C. token-count mismatch (BPE boundary): 0/20 examples
+B. add_special_tokens adds: 0 token(s)
+   ours   mean logprob: -0.057559
+   theirs mean logprob: -0.057314   delta=0.000938
+A. theirs w/o EOS      : -0.058456   delta_vs_ours=0.001637
+   => EOS alone accounts for 0.001497 mean abs logprob
+   normalized prob: ours 0.944846 vs theirs 0.945086
+factor diff exit=0

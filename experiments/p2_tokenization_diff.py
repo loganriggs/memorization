@@ -46,19 +46,28 @@ def ours_ids(tok, q, a):
 
 
 def theirs_ids(tok, q, a):
-    """open-unlearning preprocess_chat_instance: joined tokenize, split by
-    prompt length, EOS appended."""
+    """open-unlearning preprocess_chat_instance: tokenize the JOINED string,
+    mask the first len(prompt_ids) positions, append EOS.
+
+    Returns the full sequence and the label start index -- NOT prompt/answer
+    halves. Their asst_start_tag ends with a space, so tok(wrapped) ends in a
+    standalone ' ' token while tok(wrapped + answer) merges that space into
+    ' The'. Concatenating the halves would fabricate a sequence that never
+    exists in their pipeline (doubled space, dropped first word) and make their
+    evaluator look far worse than it is.
+    """
     wrapped = USER_START + q + USER_END + ASST_START
     chat = tok(wrapped + a, add_special_tokens=True).input_ids
     prompt = tok(wrapped, add_special_tokens=True).input_ids
     if chat[-1] != tok.eos_token_id:
         chat = chat + [tok.eos_token_id]
-    return prompt, chat[len(prompt):]
+    return chat, len(prompt)
 
 
-def mean_lp(model, pids, aids):
-    ids = torch.tensor([pids + aids], device=DEVICE)
-    labels = torch.tensor([[-100] * len(pids) + aids], device=DEVICE)
+def mean_lp_seq(model, ids_list, start):
+    """Mean logprob over ids_list[start:], scored in its true sequence."""
+    ids = torch.tensor([ids_list], device=DEVICE)
+    labels = torch.tensor([[-100] * start + ids_list[start:]], device=DEVICE)
     with torch.no_grad():
         lg = model(input_ids=ids, attention_mask=torch.ones_like(ids)).logits
     lp = -F.cross_entropy(lg[0, :-1], labels[0, 1:], ignore_index=-100,
@@ -77,14 +86,14 @@ def main():
     for r in rows:
         q, a = r["question"], r["answer"]
         po, ao = ours_ids(tok, q, a)
-        pt, at = theirs_ids(tok, q, a)
-        if len(ao) != len(at):
+        chat, start = theirs_ids(tok, q, a)
+        if len(ao) != len(chat) - start:
             n_diff += 1
-        lp_ours.append(mean_lp(model, po, ao))
-        lp_theirs.append(mean_lp(model, pt, at))
-        # factor A isolated: their span minus the trailing EOS
-        at_noeos = at[:-1] if at and at[-1] == tok.eos_token_id else at
-        lp_theirs_noeos.append(mean_lp(model, pt, at_noeos))
+        lp_ours.append(mean_lp_seq(model, po + ao, len(po)))
+        lp_theirs.append(mean_lp_seq(model, chat, start))
+        # factor A isolated: same sequence, EOS excluded from the scored span
+        noeos = chat[:-1] if chat[-1] == tok.eos_token_id else chat
+        lp_theirs_noeos.append(mean_lp_seq(model, noeos, start))
 
     o, t, tn = map(np.array, (lp_ours, lp_theirs, lp_theirs_noeos))
     print(f"model={MODEL} tok={TOK} split={SPLIT} n={len(rows)}")
