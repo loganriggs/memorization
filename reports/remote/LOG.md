@@ -609,5 +609,39 @@ while preserving continuity with the Pythia/Phi pilot series.
 prompt, so switching primary model removes that whole class of divergence —
 though it introduces the chat-template path in its place.
 
-**Next:** decision on primary model (raised with Logan and LOCAL) -> chat
-template support in t15 if (B)/(C) -> freeze pre-registration -> sweep.
+### Unblocked work done while the primary-model decision is pending
+
+Llama extensions are in the plan under *every* option, so this is not
+speculative:
+
+- **Llama-3.2-1B-Instruct `full` + `retain90` + `retain95` + `retain99`
+  downloaded.** With these, forget01/05/10 each get a real retain reference and
+  the forget05 selection rule becomes executable — the thing Phi cannot offer.
+- **`t15` gained chat-template support** (`T15_TEMPLATE=qa|llama3`), the llama3
+  template copied verbatim from their
+  `configs/model/Llama-3.2-1B-Instruct.yaml`, tokenizing the joined string and
+  splitting by prompt length to match `preprocess_chat_instance`. The `qa` path
+  is untouched when no prompt suffix is set, so existing Pythia numbers
+  reproduce byte-for-byte.
+- **`T15_ROUGE=lcs|rouge_score`** makes the scorer explicit rather than implicit.
+- **`stop_ids()`**: Llama-3 Instruct ends an assistant turn with `<|eot_id|>`
+  (128009 — here it *is* `eos_token_id`, but `<|end_of_text|>` 128001 is a
+  second stop). Trimming on `eos_token_id` alone risks leaving post-turn text in
+  the scored string — the exact flaw documented above in their evaluator, so it
+  is worth being defensive rather than lucky.
+- Eval records now stamp `template`, `rouge_impl`, `max_new`,
+  `truncate_at_question` alongside `prompt_convention`. ROUGE and model utility
+  compare **only** across records sharing all five.
+
+**DEVIATION 4 — flash-attention-2 unavailable.** Their
+`configs/model/Llama-3.2-1B-Instruct.yaml` sets
+`attn_implementation: 'flash_attention_2'`, and `flash_attn` is not installed;
+prebuilt wheels do not cover `sm_120`, and building it is slow with uncertain
+Blackwell support. Llama runs will use `sdpa`. Attention kernel choice changes
+results only at float-noise level, but it is a deviation from the published
+config and is recorded as one rather than left silent. Revisit if a Blackwell
+FA2 wheel appears.
+
+**Next:** decision on primary model (raised with Logan and LOCAL) -> validate
+the chat-template path against their evaluator on Llama -> freeze
+pre-registration -> sweep.
