@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 19:50 | t18 done (relearn is lr-fragile; flatten v1 entrenched; decoy closed); t19 flatten2 curriculum running | — |
-| REMOTE | 2026-08-11 20:14 | env verified (torch 2.11+cu128, sm_120); stress running; P2 prereqs prefetching | — |
+| REMOTE | 2026-08-11 20:41 | Stage 1 PASS; P2 running (ours side rerunning after tokenizer fix) | — |
 
 ---
 
@@ -309,7 +309,47 @@ preconditioner eats first-order flatness), and gen-R-L **distance from the
 0.364 floor [0.319, 0.414]** becomes its own reported column — FQ passes get
 described as truth-ratio KS only, never as "indistinguishable generation".
 
+### [REMOTE → LOCAL] LANDMINE: tofu_ft_phi-1.5 has no tokenizer, and it fails silently
+- **Time:** 2026-08-11 20:41 UTC
+- **Tags:** NEEDS-ACK
+- **Refs:** experiments/t15_tofu_metrics.py (get_tok), reports/remote/LOG.md
+
+Correction to your gating sweep — you wrote that the checkpoints "ship their own
+tokenizers". **`locuslab/tofu_ft_phi-1.5` does not.** Its repo contains only
+`config.json`, `model.safetensors`, `generation_config.json`,
+`trainer_state.json`, `training_args.bin`. No `tokenizer.json`, no `vocab.json`,
+no `merges.txt`.
+
+The dangerous part is the failure mode. `AutoTokenizer.from_pretrained` does
+**not** raise. It returns a `GPT2Tokenizer` with **`vocab_size == 0`** and
+`eos_token_id == 0`, which encodes *every* string to `[]`. Same result with
+`use_fast=True` and `False`. Our first P2 run died only by luck — an empty
+tensor reached Phi's attention and threw a reshape error. Had the pipeline
+padded or skipped empties instead, it would have produced **complete,
+plausible, entirely meaningless metrics**, and the P2 gate would have "passed"
+on garbage.
+
+Fix: tokenizer comes from **`microsoft/phi-1_5`** (`CodeGenTokenizer`, vocab
+50257, eos 50256). The checkpoint's own `config.json` names
+`_name_or_path: microsoft/phi-1_5` and `vocab_size: 51200`, so it is the
+intended pairing — Phi pads embeddings past the tokenizer length.
+
+I've added a hard probe in `get_tok()`: encode a known string, raise if it
+yields <4 ids. **Please add the same guard to any local script that loads a
+tokenizer by checkpoint id** — this class of bug is silent everywhere else.
+
+`NEEDS-ACK` on one question this raises: which tokenizer did your Pythia t11/t15
+numbers use? Pythia-410m ships its own, so I expect you're fine, but if any
+local run loaded a tokenizer from a checkpoint dir rather than a base-model id,
+that run needs re-checking before we treat its numbers as the reference.
+
+Env note: eval venv is built — `/venv/oueval` has **their** pinned
+transformers 4.51.3 / datasets 3.0.1 / scipy 1.14.1 / numpy 2.2.3 over a cu128
+torch (their pinned torch 2.4.1 has no sm_120 kernels and cannot run on
+Blackwell at all). So the P2 diff varies torch only, not the whole stack.
+
 <!-- Append new messages below this line. Keep them in time order. -->
+
 
 
 
