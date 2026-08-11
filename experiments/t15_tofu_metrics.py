@@ -80,18 +80,33 @@ ROUGE_IMPL = os.environ.get("T15_ROUGE", "lcs")
 # occur on this path.
 TEMPLATE = os.environ.get("T15_TEMPLATE", "qa")
 
-LLAMA3_SYS = ("<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n"
-              "You are a helpful assistant.<|eot_id|>")
-LLAMA3_USER_START = "<|start_header_id|>user<|end_header_id|>\n\n"
-LLAMA3_USER_END = "<|eot_id|>"
-LLAMA3_ASST_START = "<|start_header_id|>assistant<|end_header_id|>\n\n"
+# open-unlearning's Llama template args (configs/model/Llama-3.2-1B-Instruct.yaml).
+# Rendering goes through tokenizer.apply_chat_template -- NOT hand-rolled tags --
+# because the tokenizer's Jinja template inserts a date header
+# ("Cutting Knowledge Date: ...\nToday Date: 10 Apr 2025") that hand-rolled
+# strings miss; that omission alone moved forget prob by ~5%.
+LLAMA3_SYSTEM = "You are a helpful assistant."
+LLAMA3_DATE = "10 Apr 2025"
 
 
-def build_prompt(question):
+def _chat_ids(out):
+    """apply_chat_template(tokenize=True) returns a list in transformers 4.x
+    and a BatchEncoding in 5.x; normalize to a flat id list."""
+    if hasattr(out, "keys"):
+        out = out["input_ids"]
+    if out and isinstance(out[0], list):
+        out = out[0]
+    return list(out)
+
+
+def build_prompt(question, tok=None):
     """Prompt text, up to and including the assistant-turn opener."""
     if TEMPLATE == "llama3":
-        return (LLAMA3_SYS + LLAMA3_USER_START + question + LLAMA3_USER_END
-                + LLAMA3_ASST_START)
+        chat = [{"role": "system", "content": LLAMA3_SYSTEM},
+                {"role": "user", "content": question}]
+        return tok.apply_chat_template(chat, tokenize=False,
+                                       add_generation_prompt=True,
+                                       date_string=LLAMA3_DATE)
     return f"Question: {question}\nAnswer:" + PROMPT_SUFFIX
 
 
@@ -100,14 +115,22 @@ def split_ids(tok, question, answer):
 
     The QA path tokenizes the two halves separately (' ' + answer keeps the
     leading space bound to the first word, which is correct for BPE). The chat
-    path tokenizes the joined string and splits by prompt length, matching
-    open-unlearning's preprocess_chat_instance.
+    path mirrors open-unlearning's preprocess_chat_instance exactly: full
+    conversation ids vs generation-prompt ids, answer span = the difference --
+    which includes the closing <|eot_id|>, as theirs does. Matching their span
+    is required for the FQ self-test against their published logs.
     """
-    prompt = build_prompt(question)
     if TEMPLATE == "llama3":
-        full = tok(prompt + answer, add_special_tokens=False).input_ids
-        pids = tok(prompt, add_special_tokens=False).input_ids
+        chat = [{"role": "system", "content": LLAMA3_SYSTEM},
+                {"role": "user", "content": question}]
+        full = _chat_ids(tok.apply_chat_template(
+            chat + [{"role": "assistant", "content": answer}], tokenize=True,
+            add_generation_prompt=False, date_string=LLAMA3_DATE))
+        pids = _chat_ids(tok.apply_chat_template(
+            chat, tokenize=True, add_generation_prompt=True,
+            date_string=LLAMA3_DATE))
         return pids, full[len(pids):]
+    prompt = build_prompt(question)
     pids = tok(prompt, add_special_tokens=False).input_ids
     aids = tok(" " + answer, add_special_tokens=False).input_ids
     return pids, aids
@@ -217,7 +240,7 @@ def greedy_batch(model, tok, rows, max_new=None, bs=8):
     texts = []
     for i in range(0, len(rows), bs):
         chunk = rows[i:i + bs]
-        enc = [tok(build_prompt(r["question"]),
+        enc = [tok(build_prompt(r["question"], tok),
                    add_special_tokens=False).input_ids for r in chunk]
         lens = torch.tensor([len(e) for e in enc], device=DEVICE)
         B, L = len(chunk), int(lens.max()) + max_new
