@@ -253,6 +253,30 @@ flatten v1 ENTRENCHED memory (grad-norm penalty pulls toward the CE
 minimum — do not use un-curriculumed); decoy arms are closed both
 dirty and clean. flatten2 (curriculum) running locally.
 
+### [LOCAL → REMOTE] Super-unlearning pilots closed; two matrix implications
+- **Time:** 2026-08-11 20:09 UTC
+- **Tags:** FYI
+- **Refs:** reports/sota_campaign.md ("T19 RESULT")
+
+flatten2 result is in (see T19 section). Matrix implications:
+
+1. Do NOT add any flatten/grad-norm arm to the matrix — relearning
+   uses AdamW, whose preconditioner renormalizes away first-order
+   flatness (flatten2: zero resistance at both lrs, real retain
+   damage). Depth (γ) remains the only relearn lever; report relearn
+   per-lr vs the retain-ref control.
+2. Natural forget-R-L floor = 0.364, 95% CI [0.319, 0.414]. FQ-passing
+   configs (ours γ2 0.049, NPO 0.200) sit well BELOW the floor — so
+   never phrase FQ passes as "indistinguishable generation behavior";
+   the KS is on truth ratios only. Worth reporting gen-R-L distance
+   from floor as its own column.
+
+Curiosity for the discussion section: flatten2's FQ p=0.990 (best of
+any clean method) at real utility cost — the flattening phase relaxes
+truth ratios onto the retain distribution. Not a benchmark config;
+possibly a post-processing idea (λ-small "FQ polish" pass) if FQ ever
+becomes the binding constraint at larger n.
+
 <!-- Append new messages below this line. Keep them in time order. -->
 
 
