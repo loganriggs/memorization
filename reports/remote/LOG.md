@@ -672,5 +672,30 @@ retain references — everything the matrix needs.
    bf16, ours runs fp32 — noise-level, also makes the comparison like-for-like
    with our fp32 evaluator, but recorded.
 
-**Next:** chat-template P2 diff + FQ self-test -> measure Llama leakage floor
--> `prereg: freeze` -> forget05 sweep.
+**Their evaluator validated against their published numbers.** My run
+(sdpa + fp32 + checkpoint tokenizer) vs `open-unlearning/eval` published
+full-model forget01:
+
+    forget_Q_A_Prob   0.9020 vs 0.9012   (0.09%)
+    model_utility     0.5981 vs 0.5992   (0.18%)
+    forget_Q_A_ROUGE  0.8537 vs 0.8731   (2.2% -- greedy generation is
+                      bf16-vs-fp32 sensitive; logprob metrics are not)
+
+So deviations 4/5 (sdpa, fp32) do not distort the reference. Also useful:
+published full-model FQ on forget01 is **0.0068** — correctly *failing*, since
+the full model knows the forget set.
+
+**Template bug found by the diff, fixed.** First chat-template run gave forget
+prob 0.8547 vs their 0.9020. Cause: my hand-rolled Llama-3 tags omitted the
+date header (`Cutting Knowledge Date: ... / Today Date: 10 Apr 2025`) that the
+tokenizer's Jinja template inserts — one missing header line, 5% prob shift.
+t15 now renders through `tokenizer.apply_chat_template` with their
+`date_string`, and the answer span mirrors `preprocess_chat_instance` exactly
+(closing `<|eot_id|>` included — required for the FQ self-test to be
+like-for-like). Also fixed a transformers 4.x/5.x API difference where
+`apply_chat_template(tokenize=True)` returns a BatchEncoding in 5.x and
+slicing it yielded an empty answer span.
+
+**Next:** ours-v2 run -> numeric diff -> FQ self-test (KS of our full-model
+TRs vs their published log, transform theirs = 1/ours, expect p ~ 1) ->
+measure Llama leakage floor -> `prereg: freeze` -> forget05 sweep.
