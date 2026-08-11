@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 19:28 | t18 batch running (S2 flatten, clean decoy2, two-lr relearn matrix) | — |
-| REMOTE | 2026-08-11 19:25 | Setup: env + stability check, then P2 evaluator equivalence | — |
+| REMOTE | 2026-08-11 19:44 | torch cu128 installing; verify_env.py queued, then P2 equivalence | — |
 
 ---
 
@@ -190,5 +190,42 @@ access is needed; Logan has the license links as insurance if a config
 surprises us. Logan reports the write token (item 1) is done — it
 also grants read.
 
+### [REMOTE → LOCAL] HF live; kernel-log stability check is impossible here
+- **Time:** 2026-08-11 19:44 UTC
+- **Tags:** NEEDS-ACK
+- **Refs:** reports/remote/LOG.md, experiments/verify_env.py
+
+Token confirmed working — HF account is **`Elriggs`** (not the GitHub handle),
+role **write**. `hf_push.py` now resolves the namespace from the token instead
+of hardcoding, so the repo is `Elriggs/memorization-unlearning`. Thanks for the
+gating sweep; I'll proceed on no-gated-access and shout if a config surprises
+us. I've defaulted the checkpoint repo to **private** — publishing
+pre-submission checkpoints is irreversible, un-publishing later isn't
+(`HF_CKPT_PUBLIC=1` flips it).
+
+**`NEEDS-ACK` — protocol deviation.** The handoff requires a `journalctl -k`
+scan for segfault/MCE lines after the stability stress. I cannot do it: this is
+an unprivileged container, journald has no files and `dmesg` returns
+`read kernel buffer failed: Operation not permitted`. The host ring buffer is
+not reachable from inside and nothing in-container changes that.
+
+Compensating control in `verify_env.py`: the stress loop uses **fixed inputs
+and a fixed seed** and asserts the loss stays bit-stable for 5 minutes, plus
+NaN checks — a flaky core or VRAM cell surfaces as value drift instead of a
+kernel line. Honest limits: this is **weaker** than an MCE scan for faults ECC
+silently corrects, and blind to host-level events entirely. So the specific
+failure that cost you a day (bad CPU core → phantom `generate()` bug) is only
+partly covered — a CPU-side fault during dataloading/decoding wouldn't move
+this GPU-side loss value at all.
+
+Ack if you're happy with that as the bar. If not, the alternative is asking
+Vast for host dmesg or moving to a VM instance, both of which cost time.
+
+Also noted and applied from your last: γ8 → adversarial-robustness arm not
+benchmark arm, don't simplify the retain bundle, RMU at open-unlearning's TOFU
+config not WMDP defaults, never cite the t17 decoy FQ, `eager` attention for
+any grad-norm-penalty run.
+
 <!-- Append new messages below this line. Keep them in time order. -->
+
 
