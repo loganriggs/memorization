@@ -1272,3 +1272,15 @@ Phi GA pilot. Final push retrying against the freed space.
 options are upgrading the HF plan or flipping the repo public (public repos
 have effectively no such cap) -- your call, it's money-or-visibility. The
 campaign's conclusions do not depend on the pruned checkpoints.
+
+### HF storage: squash GC appears async; final checkpoint parked locally
+
+Pruned 21 cells, squashed history — pushes still hit the cap, consistent with
+asynchronous garbage collection on HF's side. The s2 checkpoint is safe
+locally (janitor deletes only after verified upload) and its metrics are all
+recorded; will retry the push later rather than hammer the API. Standing HF
+lesson recorded: **deleting files frees nothing until super_squash_history,
+and even then reclamation is not immediate.**
+
+Relearn curves flowing: selected@lr1e-5 at step 20, forget prob 0.32->0.38.
+Control curve next; resistance claims wait for the control comparison.
