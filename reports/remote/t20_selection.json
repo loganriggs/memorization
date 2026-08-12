@@ -1,0 +1,114 @@
+{
+  "aggregate": [
+    {
+      "scope": "all",
+      "gamma": 0.5,
+      "n_seeds": 3,
+      "fq_mean": 0.0020796666666666667,
+      "fq_range": 0.003338,
+      "leak_mean": 0.2431,
+      "leak_range": 0.015300000000000008,
+      "util_mean": 0.43566666666666665,
+      "util_range": 0.04349999999999998,
+      "admissible": false
+    },
+    {
+      "scope": "all",
+      "gamma": 1.0,
+      "n_seeds": 3,
+      "fq_mean": 0.008752666666666667,
+      "fq_range": 0.020009,
+      "leak_mean": 0.16633333333333333,
+      "leak_range": 0.1187,
+      "util_mean": 0.4272,
+      "util_range": 0.0242,
+      "admissible": false
+    },
+    {
+      "scope": "all",
+      "gamma": 2.0,
+      "n_seeds": 3,
+      "fq_mean": 0.012784666666666666,
+      "fq_range": 0.022088,
+      "leak_mean": 0.05196666666666666,
+      "leak_range": 0.0475,
+      "util_mean": 0.44580000000000003,
+      "util_range": 0.08689999999999998,
+      "admissible": false
+    },
+    {
+      "scope": "all",
+      "gamma": 4.0,
+      "n_seeds": 3,
+      "fq_mean": 0.0021393333333333334,
+      "fq_range": 0.004275,
+      "leak_mean": 0.034866666666666664,
+      "leak_range": 0.025400000000000002,
+      "util_mean": 0.4689666666666667,
+      "util_range": 0.04830000000000001,
+      "admissible": false
+    },
+    {
+      "scope": "min",
+      "gamma": 0.5,
+      "n_seeds": 3,
+      "fq_mean": 0.001159,
+      "fq_range": 0.002826,
+      "leak_mean": 0.39443333333333336,
+      "leak_range": 0.02090000000000003,
+      "util_mean": 0.4330333333333333,
+      "util_range": 0.02360000000000001,
+      "admissible": false
+    },
+    {
+      "scope": "min",
+      "gamma": 1.0,
+      "n_seeds": 3,
+      "fq_mean": 0.000598,
+      "fq_range": 0.001242,
+      "leak_mean": 0.3749,
+      "leak_range": 0.017100000000000004,
+      "util_mean": 0.43836666666666674,
+      "util_range": 0.08150000000000002,
+      "admissible": false
+    },
+    {
+      "scope": "min",
+      "gamma": 2.0,
+      "n_seeds": 3,
+      "fq_mean": 0.0046036666666666665,
+      "fq_range": 0.007572,
+      "leak_mean": 0.37666666666666665,
+      "leak_range": 0.027600000000000013,
+      "util_mean": 0.4469,
+      "util_range": 0.023799999999999988,
+      "admissible": false
+    },
+    {
+      "scope": "min",
+      "gamma": 4.0,
+      "n_seeds": 3,
+      "fq_mean": 0.06616566666666666,
+      "fq_range": 0.173629,
+      "leak_mean": 0.3448333333333333,
+      "leak_range": 0.0812,
+      "util_mean": 0.4458333333333333,
+      "util_range": 0.017000000000000015,
+      "admissible": true
+    }
+  ],
+  "rule": "prereg 96f8fec + amendments 1-3",
+  "selected": {
+    "scope": "min",
+    "gamma": 4.0,
+    "n_seeds": 3,
+    "fq_mean": 0.06616566666666666,
+    "fq_range": 0.173629,
+    "leak_mean": 0.3448333333333333,
+    "leak_range": 0.0812,
+    "util_mean": 0.4458333333333333,
+    "util_range": 0.017000000000000015,
+    "admissible": true
+  },
+  "status": "ADMISSIBLE_SELECTION"
+}

@@ -22,7 +22,7 @@ steps: all-token 100, min-token 450 (per-scope calibration, amendment 3)
 | ours min_g0.5 | 3 | 0.0012 ± 0.0014 | 0.3944 ± 0.0105 | 0.4330 ± 0.0118 |
 | ours min_g1 | 3 | 0.0006 ± 0.0006 | 0.3749 ± 0.0086 | 0.4384 ± 0.0408 |
 | ours min_g2 | 3 | 0.0046 ± 0.0038 | 0.3767 ± 0.0138 | 0.4469 ± 0.0119 |
-| ours min_g4 | 2 | 0.0971 ± 0.0808 **✓** | 0.3657 ± 0.0188 | 0.4432 ± 0.0085 |
+| ours min_g4 | 3 | 0.0662 ± 0.0868 **✓** | 0.3448 ± 0.0406 | 0.4458 ± 0.0085 |
 
 ## Baselines (open-unlearning published configs, effective batch 32)
 

@@ -1058,3 +1058,38 @@ Final grid means (3 seeds except min_g4 pending its s2):
 The final story survived seed averaging: the admissible cell is the one that
 RESEMBLES the never-knew reference (leakage at floor) rather than maximally
 suppressing; every deep suppressor fails distributional indistinguishability.
+
+## GRID COMPLETE (24/24) — SELECTION: min-token gamma4
+
+Frozen rule (96f8fec + amendments), executed mechanically by t24:
+
+    scope gamma   FQ mean+-rng      leak          util        admissible
+    all   0.5    0.0021+-0.0033   0.2431        0.4357        no
+    all   1      0.0088+-0.0200   0.1663        0.4272        no
+    all   2      0.0128+-0.0221   0.0520        0.4458        no
+    all   4      0.0021+-0.0043   0.0349        0.4690        no
+    min   0.5    0.0012+-0.0028   0.3944        0.4330        no
+    min   1      0.0006+-0.0012   0.3749        0.4384        no
+    min   2      0.0046+-0.0076   0.3767        0.4469        no
+    min   4      0.0662+-0.1736   0.3448        0.4458        YES  <- SELECTED
+
+Reference: floor 0.3950, retain95 utility 0.5961. Full-model FQ: 1.43e-12.
+
+Honest caveats, recorded with the selection:
+- min_g4's FQ mean rides on one high seed (0.178/0.016/0.004): the +-range is
+  2.6x the mean. Its admissibility is a *mean over 3 seeds* clearing the bar,
+  not a robust per-seed property. The seed-noise finding applies to our own
+  headline number and the paper must say so.
+- Its seed-2 FQ (0.0043) equals min_g2_s2's exactly -- KS p-values are discrete
+  in the test statistic at n=200, so identical values are expected behaviour,
+  not a data error (verified distinct leak/util for those cells).
+
+End-of-grid mechanical note: the runner died at the very tail with a bash
+lazy-read syntax error -- caused by my own mid-run edits to the script (the
+exact hazard avoided for the janitor). All 24 cells' data were already
+recorded; only the final HF push + completion marker were lost, both replayed
+by hand. Lesson standing: never edit a running bash script, ever, including
+"just the tail".
+
+Chain state: marker written -> baselines launch; then t28 headline (min g4,
+steps 90/900 for f01/f10 per amendment 4) -> t25 relearn curves.
