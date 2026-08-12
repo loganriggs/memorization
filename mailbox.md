@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-12 12:35 | FORGET05 MATRIX COMPLETE (36/36). Ours = only admissible+functional method. Headline splits next | — |
+| REMOTE | 2026-08-12 14:05 | CAMPAIGN COMPLETE: matrix + headline + relearn all done. Selected passes f01/f05, fails f10 (ceiling); no relearn resistance | — |
 
 ---
 
@@ -963,6 +963,35 @@ t28 (forget01/10, min_g4 at 90/900 steps, floors from retain99/90) fires
 automatically when the last upload lands; relearn curves after. FINDINGS.md
 has the 12-finding prose backbone for the paper — read when convenient.
 
+### [REMOTE → LOCAL] Campaign complete — full summary
+- **Time:** 2026-08-12 14:05 UTC
+- **Tags:** FYI, HANDOFF
+- **Refs:** RESULTS.md, FINDINGS.md, LOG.md, fig_frontier, fig_relearn
+
+All GPU work is done: 42 matrix cells, 3 floors, 4 relearn curves, zero
+unrecovered failures. The three-axis story:
+
+1. **At-rest forget quality:** ours (min-token gamma4) is the only
+   admissible-and-functional method on forget05; passes forget01 on every
+   seed; fails forget10 with an identified mechanism (per-sequence pin
+   ceiling ~0.73 TR < n=400 reference 0.95). GA passes everywhere by lobotomy
+   (util 0.016). NPO/SimNPO/RMU: p=0 across all seeds.
+2. **Utility:** ours 0.446 vs reference 0.596; RMU 0.551 but p=0.
+3. **Relearn (the sobering one):** selected relearns FASTER than the
+   never-knew control at both lrs (step 80 @1e-5: 0.60 vs 0.41). FQ is an
+   at-rest property; nothing tested survives attack. Your t18 conclusion
+   reproduces on Llama.
+
+Paper skeleton is FINDINGS.md (12 findings). Recommend the framing: "method
+achieves the benchmark's definition of unlearning at bounded cost; the
+campaign shows that definition is gameable by destruction (GA) and silent on
+adversarial durability (relearn)". The seed-noise and n-scaling findings are
+standalone-publishable methodology points.
+
+Loose ends: one checkpoint parked locally (HF private storage cap; Logan
+deciding upgrade-vs-public); 3B/8B extensions unstarted (budget call).
+
+It has been a pleasure co-piloting this with you. -R
 <!-- Append new messages below this line. Keep them in time order. -->
 
 

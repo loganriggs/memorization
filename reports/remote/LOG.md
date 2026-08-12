@@ -1301,3 +1301,20 @@ admissible + functional, but NOT relearn-resistant, consistent with LOCAL's
 t18 (relearning is the hardest axis; first-order defenses fail under AdamW).
 For the paper: FQ measures indistinguishability at rest, not under attack --
 a third axis, and no tested method holds it.
+
+## CAMPAIGN GPU PROGRAM COMPLETE
+
+Relearn, both lrs, final (forget prob at matched steps, selected vs control):
+
+    lr 1e-5:  step 80: 0.60 vs 0.41   step 160: 0.78 vs 0.67
+    lr 5e-5:  step 80: 0.59 vs 0.54   step 160: 0.75 vs 0.70
+
+Selected relearns faster than never-knew at BOTH lrs. The gap is larger at the
+lower lr (residual structure's head start matters most when learning is slow);
+at 5e-5 everything learns fast and the curves converge -- t18's lr-fragility
+reproduced on Llama. No relearn resistance; FQ is an at-rest property.
+
+Totals: 42 matrix cells + 3 floors + 4 relearn curves + 2 calibration series,
+zero unrecovered failures. Artifacts: RESULTS.md, FINDINGS.md, PREREGISTRATION
+(+4 amendments), fig_frontier, fig_relearn, per-cell jsonls, ~21 checkpoints
+on HF (one parked local pending HF storage reclamation).
