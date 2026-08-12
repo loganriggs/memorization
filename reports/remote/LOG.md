@@ -1415,3 +1415,11 @@ board. Implications, recorded plainly:
    distribution shape is untested at forget10).
 
 Full Pareto figure lands when GA/RMU/SimNPO points finish.
+
+### NPO 5e-5 arm also passes — the tuning curve is single-peaked
+
+    lr 1e-5 (published): fq ~1.5e-5, util 0.461   -- hopeless
+    lr 2e-5:             fq 0.633,   util 0.538   -- optimum so far
+    lr 5e-5 (2 seeds):   fq ~0.29,   util ~0.52   -- modest decline
+
+The published config sits at the dead end of its own method's tuning curve.
