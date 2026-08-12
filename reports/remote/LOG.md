@@ -751,3 +751,26 @@ gamma 0.5 (margins driven negative), retain anchors active.
 **Next:** sweep completes -> apply the frozen selection rule -> baselines
 (GA/NPO/SimNPO/RMU at open-unlearning configs, effective batch 32) ->
 forget01/10 scoring.
+
+## 2026-08-12 (cont.) — step calibration
+
+**Deep grid is too deep everywhere for all-token.** First snapshot
+(all-token gamma2, step **150** = 3 epochs over forget05, post-eot-fix):
+forget prob 0.0073, gen-ROUGE 0.0246, FQ p=0.000649 FAIL, mean TR (their
+convention) 2.41 vs reference 0.97. Already far past the reference at the
+shallowest planned depth — **Llama-1B forgets roughly an order of magnitude
+faster than Pythia-410m under the same protocol.** The FQ crossing (TR moving
+0.47 -> ~0.97) happens somewhere in steps 0-150.
+
+Shallow calibration launched (all-token gamma2, snapshots {25,50,75,100,125},
+150 total), running concurrently with the deep-snapshot evals. The deep
+snapshots (300-750) are still being evaluated for the record — the
+"deeper is monotonically worse" claim gets verified, not assumed; my P2 track
+record says assumptions about this pipeline lose.
+
+**Bookkeeping caution:** the shallow run reuses the final dir
+`t20_forget05_all_g2_s0`, whose 750-step contents were preserved first as
+`_step750`. The pending loop-1 eval tagged `calib_t20_forget05_all_g2_s0`
+will therefore actually measure the 150-step model — that tag is
+**depth-ambiguous and excluded** from the calibration table; `_step750`
+stands in for the deep end if needed.
