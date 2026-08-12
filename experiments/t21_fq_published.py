@@ -34,10 +34,14 @@ EVAL_DS = "/workspace/.hf_home/hub/datasets--open-unlearning--eval/snapshots/*"
 
 
 def published_trs(model_dirname, split):
-    pat = f"{EVAL_DS}/{model_dirname}/evals_{split}/TOFU_EVAL.json"
-    fs = glob.glob(pat)
+    # Layout differs by model kind: the full model carries per-split subdirs
+    # (evals_forget01/05/10); each retain reference pairs with exactly one
+    # forget split, so its TOFU_EVAL.json sits at the top level.
+    pats = [f"{EVAL_DS}/{model_dirname}/evals_{split}/TOFU_EVAL.json",
+            f"{EVAL_DS}/{model_dirname}/TOFU_EVAL.json"]
+    fs = [f for pat in pats for f in glob.glob(pat)]
     if not fs:
-        sys.exit(f"no published log matches {pat}")
+        sys.exit(f"no published log matches any of {pats}")
     j = json.load(open(fs[0]))
     vals = [v["score"] for v in j["forget_truth_ratio"]["value_by_index"].values()]
     return np.array(vals, dtype=np.float64)
