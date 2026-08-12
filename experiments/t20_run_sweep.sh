@@ -63,7 +63,10 @@ for seed in 0 1 2; do
         > "$LOGDIR/${tag}_fq.log" 2>&1
       echo "fq $tag exit=$?" >> "$LOGDIR/sweep.log"
 
-      # ---- summary row (eval record + fq p-value) ----
+      # ---- summary row (eval record + fq p-value; skip if already recorded) ----
+      if grep -q "\"cell\": \"$tag\"" "$SUMMARY" 2>/dev/null; then
+        echo "summary $tag already recorded" >> "$LOGDIR/sweep.log"
+      else
       python - "$tag" "$efftag" "$SUMMARY" <<'PYEOF' >> "$LOGDIR/sweep.log" 2>&1
 import json, re, sys
 tag, efftag, out = sys.argv[1:4]
@@ -77,6 +80,7 @@ with open(out, "a") as f:
     f.write(json.dumps(ev) + "\n")
 print(f"summary {tag} fq_p={ev['fq_p_vs_retain95']}")
 PYEOF
+      fi
 
       # ---- persist: HF checkpoint (async) + git summary ----
       # The upload is ~2.4 GB and takes 10-15 min, during which the GPU would
