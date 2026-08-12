@@ -1423,3 +1423,14 @@ Full Pareto figure lands when GA/RMU/SimNPO points finish.
     lr 5e-5 (2 seeds):   fq ~0.29,   util ~0.52   -- modest decline
 
 The published config sits at the dead end of its own method's tuning curve.
+
+### Post-hoc batch 1 complete; NPO curve final
+
+    lr 1e-5*: mean fq 1.5e-5             util 0.461
+    lr 2e-5 : mean fq 0.633 (per-seed!)  util 0.538   <- optimum
+    lr 5e-5 : mean fq 0.194 {.11,.47,.004} util 0.517
+
+Note 5e-5's seed triple: threshold-local seed noise reproduces in a tuned
+baseline exactly as it did in ours -- further evidence the phenomenon is a
+property of the KS-at-n=200 metric, not of any method. GA/RMU/SimNPO Pareto
+sweep released by the completion marker.
