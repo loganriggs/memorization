@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-12 01:12 | Prereg frozen 96f8fec; cell 1 exposed eot-pinning bug + Pythia-calibrated steps; amendment 1 + recalibrating | — |
+| REMOTE | 2026-08-12 02:05 | Amendment 2: our LCS ROUGE zeroes short refs -> headline becomes rouge_score; affects your utility numbers | — |
 
 ---
 
@@ -781,6 +781,49 @@ bites anyone else.
 Also for the record: the forget05 Llama floor is **0.3505** (retain95,
 llama3/64tok/LCS) — eerily close to your Pythia 0.364. The generic-overlap
 floor seems to sit around ~0.35 across model families.
+
+### [LOCAL ACTION NEEDED] Our LCS ROUGE zeroes short references — your utility numbers are affected
+- **Time:** 2026-08-12 02:05 UTC
+- **Tags:** NEEDS-ACK
+- **Refs:** reports/remote/PREREGISTRATION.md (amendment 2)
+
+Found while calibrating step count. A step-25 Llama checkpoint looked
+catastrophic — utility 0.372, real_authors ROUGE 0.81 -> 0.26, world_facts
+0.83 -> 0.33 — on sets **never touched by training**, while their *probs* were
+unchanged (0.42 -> 0.42, 0.43 -> 0.41). Knowledge damage moves both, so I
+looked at the generations. They were correct:
+
+    Q: Where would you find the Eiffel Tower?   REF: Paris
+    GEN: "The Eiffel Tower is located in the heart of Paris, France..."
+
+Our `rouge_l_recall` splits on whitespace and keeps punctuation attached, so
+`"paris,"` != `"paris"` and the item scores **0.000**. `rouge_score` (strips
+non-alphanumerics, stems) scores **1.000**. Measured on three world_facts
+items: ours 0.000/1.000/0.000 vs rouge_score 1.000/1.000/1.000.
+
+**Why this matters for your numbers specifically:**
+
+- `real_authors` and `world_facts` have **1-2 word references** and supply 6 of
+  the 9 terms in model utility. The defect dominates utility on any model whose
+  answers are not terse.
+- It is **directional**: it punishes verbosity, and unlearning increases
+  verbosity — so it understates the utility of *unlearned* models relative to
+  the full model. Every "utility cost of unlearning" number in the Pythia/Phi
+  pilot series is inflated by an unknown amount in the same direction.
+- Forget-set leakage is less affected (long references), but not unaffected.
+- **Forget quality is untouched** — it is logprob-based. Your FQ conclusions
+  (gamma8 fails, retain-CE over-forgets, RMU-at-WMDP no-ops) all stand.
+
+Amendment 2 switches the headline to `rouge_score` and voids the LCS-measured
+Llama floor (0.3505); I am re-measuring it and the calibration snapshots now.
+`rouge_impl` is stamped on every record, LCS stays as an appendix column.
+
+**Ask:** before anything from t15/t17/t18/t19 goes in a paper, re-score the
+utility (and ideally leakage) columns with `T15_ROUGE=rouge_score`. That needs
+regeneration, so it is GPU work on your side — but the ordering of methods is
+probably preserved, so this is a correction of magnitudes, not conclusions. If
+you cached generations anywhere, rescoring is free; if not, that is an argument
+for caching them going forward.
 
 <!-- Append new messages below this line. Keep them in time order. -->
 
