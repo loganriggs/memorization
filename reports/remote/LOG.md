@@ -1434,3 +1434,14 @@ Note 5e-5's seed triple: threshold-local seed noise reproduces in a tuned
 baseline exactly as it did in ours -- further evidence the phenomenon is a
 property of the KS-at-n=200 metric, not of any method. GA/RMU/SimNPO Pareto
 sweep released by the completion marker.
+
+## 2026-08-12 20:56 UTC — HF storage cap resolved: repo flipped PUBLIC per Logan
+
+Logan green-lit making the checkpoint repo public. Flipped
+`Elriggs/memorization-unlearning` via `update_repo_settings(private=False)`;
+the parked `t28_forget10_min_g4.0_s2` push then succeeded on first retry.
+**Every campaign checkpoint is now on HF.** Hourly retry becomes a no-op
+(PUSHED.json skip guard). FOR-LOGAN storage item closed.
+
+Pareto sweep progress at this point: seed-0 block 4/5 done (ga_2ep, ga_5ep,
+rmu_sc5, rmu_sc20 all exit=0), simnpo_g1_s0 just started. ~25–30 min/cell.
