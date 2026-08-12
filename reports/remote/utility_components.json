@@ -1,0 +1,68 @@
+{
+  "ours_min_g4": {
+    "retain/prob": 0.3269,
+    "retain/rouge": 0.4544333333333333,
+    "retain/tr": 0.3559549623037033,
+    "real_authors/prob": 0.3738333333333333,
+    "real_authors/rouge": 0.7011666666666668,
+    "real_authors/tr": 0.4487683343106212,
+    "world_facts/prob": 0.3929,
+    "world_facts/rouge": 0.8127333333333334,
+    "world_facts/tr": 0.5068992362144459
+  },
+  "gradascent": {
+    "retain/prob": 0.0041333333333333335,
+    "retain/rouge": 0.15363333333333334,
+    "retain/tr": 0.2763990169359469,
+    "real_authors/prob": 0.31373333333333336,
+    "real_authors/rouge": 0.006666666666666667,
+    "real_authors/tr": 0.4100080692284651,
+    "world_facts/prob": 0.3535,
+    "world_facts/rouge": 0.07709999999999999,
+    "world_facts/tr": 0.4584062475601205
+  },
+  "npo": {
+    "retain/prob": 0.36083333333333334,
+    "retain/rouge": 0.3107666666666667,
+    "retain/tr": 0.42796688102740504,
+    "real_authors/prob": 0.40093333333333336,
+    "real_authors/rouge": 0.7903333333333333,
+    "real_authors/tr": 0.5071039781766272,
+    "world_facts/prob": 0.4176666666666667,
+    "world_facts/rouge": 0.7643333333333334,
+    "world_facts/tr": 0.5630908870923537
+  },
+  "simnpo": {
+    "retain/prob": 0.8763333333333333,
+    "retain/rouge": 0.7955666666666668,
+    "retain/tr": 0.5205078373306747,
+    "real_authors/prob": 0.4196,
+    "real_authors/rouge": 0.7928333333333333,
+    "real_authors/tr": 0.5381106416696039,
+    "world_facts/prob": 0.42196666666666666,
+    "world_facts/rouge": 0.8381666666666666,
+    "world_facts/tr": 0.6009359046665738
+  },
+  "rmu": {
+    "retain/prob": 0.6902666666666667,
+    "retain/rouge": 0.5550333333333334,
+    "retain/tr": 0.5101524601753583,
+    "real_authors/prob": 0.4142333333333334,
+    "real_authors/rouge": 0.6995,
+    "real_authors/tr": 0.5372452719258721,
+    "world_facts/prob": 0.41273333333333334,
+    "world_facts/rouge": 0.7975,
+    "world_facts/tr": 0.5774980665451944
+  },
+  "retain95_ref": {
+    "retain/prob": 0.8681,
+    "retain/rouge": 0.7876,
+    "retain/tr": 0.5164967958397331,
+    "real_authors/prob": 0.4053,
+    "real_authors/rouge": 0.8545,
+    "real_authors/tr": 0.5149842416746544,
+    "world_facts/prob": 0.4303,
+    "world_facts/rouge": 0.8462,
+    "world_facts/tr": 0.6040476897578098
+  }
+}
