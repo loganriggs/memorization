@@ -175,6 +175,36 @@ Consequences, all executed before any grid cell is scored:
 
 Grid, scopes, seeds, admissibility threshold and selection rule are untouched.
 
+## 3d. Amendment 3 (2026-08-12, before any grid cell is scored)
+
+**Step count is calibrated PER SCOPE, not once for the whole grid.**
+Amendment 1 said the chosen count would be fixed across the grid; that is
+withdrawn for the reason below, and declared before the calibrated values are
+known.
+
+Calibration at gamma=2 shows the two scopes forget at very different rates:
+
+    scope        step 150 mean TR      vs reference 0.9741
+    all-token              2.4075      overshot
+    min-token              0.6348      under-forgotten
+
+All-token pushes every answer token past the margin; min-token pushes only the
+weakest token per sequence, so at equal steps it is nowhere near equal forget
+depth. Fixing one step count across scopes would confound **scope** with
+**depth** — min-token would score worse largely because it had been trained
+less far, which is exactly the fairness failure LOCAL's t17 factorial was built
+to avoid. The comparison of interest is scope at *matched forget depth*.
+
+Procedure: one step count per scope, chosen by **max forget quality** at
+gamma=2 seed 0 on forget05, then **fixed across all gammas and seeds** within
+that scope and recorded here before the grid runs. Selecting per (scope, gamma)
+cell would give every cell its own best shot at admissibility, but multiplies
+calibration compute and lets depth absorb gamma's effect — gamma must remain
+the depth knob, per LOCAL's t17/t18 framing.
+
+Everything else — grid, scopes, seeds, admissibility threshold, selection rule,
+reporting conventions — remains untouched.
+
 ## 4. Deviations that must be declared if they happen
 
 Any of these invalidates the pre-registration unless recorded here with a
