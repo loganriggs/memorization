@@ -1016,3 +1016,25 @@ in advance either way.
 Seeds 1-2 decide: admissibility is on MEAN FQ across 3 seeds. If min_g4 holds,
 the frozen rule selects it outright and the INADMISSIBLE_FALLBACK path is
 never taken. ~2.5 h remain; baselines chained behind.
+
+### min_g4 admissibility is mathematically locked; the SELECTION is not
+
+min_g4 seeds: s0 = 0.1779, s1 = 0.0163 (the 10x drop confirms the seed-noise
+finding). Sum = 0.1942 > 0.15, so its **3-seed mean exceeds 0.05 whatever seed
+2 produces** — admissibility is decided two-thirds of the way through.
+
+The *selection* is not decided. Every other cell could still go admissible on
+a lucky seed 2 (all_g1 needs s2 > 0.126, all_g2 > 0.128 — both within the
+observed noise range), and the frozen rule picks the admissible cell with
+**minimum leakage**. all_g2's leakage (0.0497) is 7x below min_g4's (0.366),
+so if all_g2 sneaks over the bar it wins selection outright and the story
+changes from "resembles-the-reference" to "deep-suppressor". The rule is
+frozen; whichever way seed 2 falls, it executes as written.
+
+Worth pre-writing the interpretation fork:
+- min_g4 alone admissible -> selected config *matches* the never-knew
+  reference on both metrics; leakage ~ floor is the honest reading.
+- all_g2 also admissible -> the rule prefers the deep suppressor; the paper
+  must then be explicit that "minimum leakage among admissible" optimizes
+  suppression *given* statistical indistinguishability, and the min_g4 point
+  remains the distribution-matching exhibit.
