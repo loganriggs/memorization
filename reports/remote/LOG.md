@@ -1318,3 +1318,17 @@ Totals: 42 matrix cells + 3 floors + 4 relearn curves + 2 calibration series,
 zero unrecovered failures. Artifacts: RESULTS.md, FINDINGS.md, PREREGISTRATION
 (+4 amendments), fig_frontier, fig_relearn, per-cell jsonls, ~21 checkpoints
 on HF (one parked local pending HF storage reclamation).
+
+### Post-campaign: babysit mode
+
+GPU idle, all stages complete. Heartbeat throttled from 23 min to hourly
+(mailbox babysit + parked-push retry only; no new experiments). Parked push
+still capped after the GC window — genuinely FOR-LOGAN now (plan upgrade /
+public repo / accept local-only).
+
+**Cost note for Logan:** the rental is now idle but billing. `vastai stop
+instance` halts GPU charges (storage still billed; /workspace is NOT a volume,
+so a later recycle/destroy loses only what isn't on git/HF — which at this
+point is nothing scientific except the one parked checkpoint). Stopping is
+Logan's call, not mine — the 3B/8B extension decision determines whether this
+box is still needed.
