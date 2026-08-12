@@ -948,3 +948,33 @@ failed` (transient TLS); the subsequent push succeeded and local/origin were
 verified identical. Worth knowing the rental's network is not perfectly
 reliable — the per-cell git push is the mechanism that makes results survive a
 recycle, so a persistent failure there matters more than it looks.
+
+### Grid: seed-0 all-token complete (5/24 cells, zero failures)
+
+    cell            FQ p      leak     util    (floor 0.3950 / util 0.5961)
+    all g0.5     0.000967   0.2520   0.4159
+    all g1       0.002083   0.1847   0.4388
+    all g2       0.022092   0.0735   0.4803   <- dominates g0.5/g1 on ALL three
+    all g4       0.002083   0.0466   0.4772
+    min g0.5     0.003010   0.3816   0.4397
+
+Three observations at n=1 seed (to be confirmed across seeds, not concluded):
+
+1. **gamma2 dominates gamma0.5 and gamma1 on every metric simultaneously** —
+   better FQ, lower leakage, higher utility. If that ordering survives seeds,
+   the "milder is safer" intuition is wrong on Llama: too-shallow margins leave
+   the model in a distributionally weirder state than a deeper, cleaner push.
+2. FQ peaks interior in gamma (0.0221 at gamma2, falling to 0.0021 at gamma4),
+   echoing the interior peak in depth. Leakage, by contrast, is monotone in
+   gamma. The two metrics genuinely decouple.
+3. **min-token gamma0.5 leakage (0.3816) sits essentially AT the floor
+   (0.3950)** — min-token barely suppresses generation below never-knew level,
+   while all-token goes far below. Combined with min's TR ceiling (~0.70), the
+   scope comparison is shaping up to be: all-token = deep suppression on both
+   axes; min-token = mild on both, capped.
+
+No cell clears FQ 0.05 yet. gamma2's 0.0221 matches the calibration cell
+exactly (same config), which is a good reproducibility sign for the harness.
+
+Pace: all-token ~7 min/cell, min-token ~16 min/cell (450 steps), zero FATALs,
+uploads running concurrently. Remaining ~19 cells ~= 3.9 h.

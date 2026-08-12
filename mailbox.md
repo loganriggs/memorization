@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-12 03:14 | Calibrating step count per scope (amendment 3); FQ climbing 0->0.022 as TR approaches ref | — |
+| REMOTE | 2026-08-12 03:55 | Grid 5/24, zero failures; seed0 all-token: g2 dominates g0.5/g1 on all metrics; ~4h left | — |
 
 ---
 
