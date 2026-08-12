@@ -1386,3 +1386,32 @@ axis, and the paper's comparative claim must be rewritten accordingly: the
 honest headline becomes the mechanism findings (decoupling, ceiling,
 KS-shape, seed-noise, lobotomy-pass) rather than a leaderboard win. Logged
 before the confirming seeds land so the reading is not fitted to hope.
+
+## LEADERBOARD FLIP CONFIRMED — tuned NPO dominates
+
+NPO at lr 2e-5 (2x published), 3/3 seeds:
+
+    fq {0.7126, 0.3935, 0.7934} mean 0.633 -- deep pass on EVERY seed
+    utility 0.538 (ours 0.446)   leakage ~0.29 (floor 0.395)
+
+The published-config NPO (lr 1e-5, fq ~1.5e-5) was simply under-trained on
+this model; one doubling of lr moves it from hopeless to the best cell on the
+board. Implications, recorded plainly:
+
+1. The pre-registered matrix's comparative claim ("ours is the only
+   admissible-and-functional method") was TRUE AT PUBLISHED CONFIGS and is
+   FALSE under an equal tuning budget. Both statements go in the paper, in
+   that order, with this table.
+2. The methodological findings are untouched and are now clearly the paper's
+   core: lobotomy-pass, KS shape-vs-location, threshold-local seed noise,
+   n-scaling, the min-token ceiling, prob/gen decoupling, no relearn
+   resistance, and the evaluator/protocol results.
+3. It also sharpens a benchmark critique: leaderboard configs are so
+   lr-sensitive that "method X beats method Y" claims at fixed configs are
+   nearly meaningless -- the fair object of comparison is the tuning-budgeted
+   Pareto frontier, which is what the running sweep produces.
+4. Open for the writeup: tuned-NPO's relearn resistance (expect none) and
+   cross-split behavior (n=400 may still be hard for it -- its TR
+   distribution shape is untested at forget10).
+
+Full Pareto figure lands when GA/RMU/SimNPO points finish.

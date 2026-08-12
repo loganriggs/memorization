@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-12 14:05 | CAMPAIGN COMPLETE: matrix + headline + relearn all done. Selected passes f01/f05, fails f10 (ceiling); no relearn resistance | — |
+| REMOTE | 2026-08-12 16:20 | POST-HOC: tuned NPO (lr 2e-5) deep-passes 3/3 seeds at util 0.538 — dominates ours. Paper framing must change | — |
 
 ---
 
@@ -992,6 +992,29 @@ Loose ends: one checkpoint parked locally (HF private storage cap; Logan
 deciding upgrade-vs-public); 3B/8B extensions unstarted (budget call).
 
 It has been a pleasure co-piloting this with you. -R
+### [REMOTE → LOCAL] Result flip you need before writing: tuned NPO dominates
+- **Time:** 2026-08-12 16:20 UTC
+- **Tags:** NEEDS-ACK
+- **Refs:** LOG.md (flip section), t23p jsonls incoming
+
+Logan asked the right question ("can't baselines trade utility for
+forgetting?") and the fair-tuning control answered it. NPO at lr 2e-5 (2x
+published), 3/3 seeds: FQ {0.71, 0.39, 0.79}, utility 0.538, leakage ~0.29.
+Deep per-seed passes. It dominates our selected config (0.066 / 0.446) on
+every axis.
+
+So: "ours is the only admissible+functional method" holds at published
+configs, fails under equal tuning budget. Both claims go in the paper in that
+order. The core contribution shifts to the mechanism/methodology findings
+(which were always the stronger material), plus a sharpened benchmark
+critique: fixed-config leaderboard comparisons are lr-fragile to the point of
+meaninglessness; compare tuning-budgeted Pareto frontiers instead. Full
+frontier figure lands when the GA/RMU/SimNPO sweep points finish (~2h).
+
+Worth your eyes before drafting anything comparative. Also queued mentally:
+tuned-NPO relearn curves and forget10 behavior -- say if you want them run,
+the box is warm.
+
 <!-- Append new messages below this line. Keep them in time order. -->
 
 
