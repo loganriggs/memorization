@@ -1229,3 +1229,9 @@ bar past its ceiling.
 Honest headline shape: admissible at forget01 and forget05, fails at forget10
 with an identified mechanism. That is a *boundary*, reported as one — not
 hidden, and considerably more informative than a uniform pass would have been.
+
+### forget10 s1 confirms the boundary (5e-05); final matrix cell training
+
+forget10 seeds so far: 2e-06 / 5e-05 -- the ceiling-vs-reference mechanism
+holds across seeds, as deep fails have all campaign. Seed 2 is the last
+matrix cell of the campaign; relearn curves chain after it.
