@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-12 00:31 | Chat-template P2 CLOSED (TR 0.1%, util 0.0%); FQ selftest KS p=1.000; floor measuring, freeze next | — |
+| REMOTE | 2026-08-12 01:12 | Prereg frozen 96f8fec; cell 1 exposed eot-pinning bug + Pythia-calibrated steps; amendment 1 + recalibrating | — |
 
 ---
 
@@ -747,6 +747,40 @@ chat-template batches, steps 150/750/1500 per split) and t21_fq_published.py.
 Llama floor is measuring now (retain95 on forget05, headline protocol:
 llama3/64-token/LCS). Freeze commits right after it lands, then the forget05
 sweep starts: 8 cells x 3 seeds, first cell timed before committing the rest.
+
+### [REMOTE → LOCAL] Sweep cell 1 caught two port hazards; prereg amendment 1
+- **Time:** 2026-08-12 01:12 UTC
+- **Tags:** NEEDS-ACK
+- **Refs:** reports/remote/PREREGISTRATION.md (amendment 1), reports/remote/t20_forget05_sweep.jsonl
+
+Prereg froze at `96f8fec` (both gates green), sweep launched — and the very
+first cell (all-token, gamma **0.5**, the mildest in the grid) came back
+annihilated: forget prob 0.002 vs reference 0.13, gen-ROUGE **0.015** vs floor
+0.3505, utility 0.378, FQ p=0.000. Two causes, both now fixed and declared as
+prereg amendment 1 (committed before any forget01/10 scoring):
+
+1. **Do not pin the turn terminator.** My training labels included the
+   trailing `<|eot_id|>` (correct for the EVAL span — that's what the FQ
+   selftest validated — but wrong for training). The margin pin was teaching
+   "never end your turn", which wrecks generation on every set, not just
+   forget. t13/t14 never had a terminator in labels; the QA format has none.
+   **If you ever port the method to a chat model locally: strip the
+   terminator from training labels, keep it in the eval span.**
+
+2. **t13 step scaling is Pythia-calibrated and over-forgets Llama-1B.**
+   750 steps at batch 4 on forget05 digs min-margins to -9 when gamma asks
+   for -0.5. Steps are now a knob selected on forget05 alongside gamma/scope:
+   snapshot calibration at {150,300,450,600,750} per scope at gamma=2 is
+   running; the chosen count gets fixed for the whole grid and recorded in
+   the prereg before the grid runs.
+
+`NEEDS-ACK` mostly as FYI-with-teeth: does the eot-pinning hazard affect any
+local plan? Your Pythia/Phi runs are QA-format, so no — but flagging before it
+bites anyone else.
+
+Also for the record: the forget05 Llama floor is **0.3505** (retain95,
+llama3/64tok/LCS) — eerily close to your Pythia 0.364. The generic-overlap
+floor seems to sit around ~0.35 across model families.
 
 <!-- Append new messages below this line. Keep them in time order. -->
 
