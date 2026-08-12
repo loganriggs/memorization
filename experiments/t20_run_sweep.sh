@@ -2,7 +2,7 @@
 # Pre-registered forget05 gamma/scope sweep (prereg frozen at 96f8fec,
 # amendments 1-2 applied: eot excluded from training labels, step count
 # selected on forget05, headline scorer = rouge_score).
-# T20_GRID_STEPS must be set to the calibrated step count before running.
+# Step counts are calibrated per scope and baked in below.
 # 2 scopes x 4 gammas x 3 seeds = 24 cells, sequential and resumable:
 # skip-if-done, per-cell logs, explicit exit codes, HF push + git push per cell.
 #
@@ -14,7 +14,10 @@ cd "$(dirname "$0")"
 source /venv/main/bin/activate
 
 SPLIT=forget05
-STEPS="${T20_GRID_STEPS:?set T20_GRID_STEPS to the calibrated step count}"
+# Calibrated per scope (prereg amendment 3, recorded 2026-08-12):
+#   all-token step 100 (FQ 0.0221, interior peak)
+#   min-token step 450 (FQ 0.0085, interior peak)
+declare -A SCOPE_STEPS=( [all]="${T20_STEPS_ALL:-100}" [min]="${T20_STEPS_MIN:-450}" )
 LOGDIR=results/t20_logs
 SUMMARY=../reports/remote/t20_forget05_sweep.jsonl
 mkdir -p "$LOGDIR"
@@ -31,7 +34,7 @@ for seed in 0 1 2; do
       # ---- train (skip if checkpoint already saved) ----
       if [ ! -f "$ckpt/config.json" ]; then
         for attempt in 1 2 3; do
-          T20_STEPS="$STEPS" python t20_llama_ours.py train "$scope" "$gamma" "$seed" "$SPLIT" \
+          T20_STEPS="${SCOPE_STEPS[$scope]}" python t20_llama_ours.py train "$scope" "$gamma" "$seed" "$SPLIT" \
             > "$LOGDIR/${tag}_train.log" 2>&1
           rc=$?
           echo "train $tag attempt $attempt exit=$rc" >> "$LOGDIR/sweep.log"

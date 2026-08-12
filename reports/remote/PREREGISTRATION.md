@@ -202,6 +202,21 @@ cell would give every cell its own best shot at admissibility, but multiplies
 calibration compute and lets depth absorb gamma's effect — gamma must remain
 the depth knob, per LOCAL's t17/t18 framing.
 
+**CALIBRATED VALUES, recorded before the grid runs:**
+
+    scope        steps   FQ at gamma2 seed0   mean TR (ref 0.9741)
+    all-token      100               0.0221                 0.8536
+    min-token      450               0.0085                 0.7045
+
+Both optima are **interior** to their scanned ranges (all: 25-600 scanned, peak
+at 100 with 75 and 125 lower; min: 150-600 scanned, peak at 450 with 300 and
+600 lower), so neither is an artifact of where the scan stopped.
+
+Neither reaches the 0.05 admissibility threshold **at gamma=2**. The grid
+sweeps gamma, so whether any cell clears 0.05 remains open; per section 2 rule
+5, a fully inadmissible grid is reported as such, with the frontier, and the
+grid is not widened to manufacture a winner.
+
 Everything else — grid, scopes, seeds, admissibility threshold, selection rule,
 reporting conventions — remains untouched.
 
