@@ -1162,3 +1162,21 @@ method. LOCAL's t17 caveat ("check their tuned config before drawing
 conclusions") applies verbatim and goes in the paper text.
 
 RMU seed-0 training.
+
+### Seed-0 baselines complete — four methods, four distinct modes
+
+    method   FQ            leak     util    mode
+    GA       0.112  PASS   0.207    0.034   lobotomy pass
+    NPO      1e-05  fail   0.315    0.460   functional, distinguishable
+    SimNPO   0.0    fail   0.734    0.595   did not unlearn (their config)
+    RMU      0.0    fail   0.433    0.555   best baseline: real forgetting,
+                                            good utility, still p=0
+    ours     0.066  PASS   0.345    0.446   admissible + functional
+    (ref)    --            0.395    0.596
+
+RMU at their TOFU config is the serious competitor: forget prob 0.895 -> 0.403,
+utility within 7% of reference, leakage near floor -- yet its truth-ratio
+distribution is unambiguously distinguishable (p = 0.0). The utility-vs-ours
+comparison (0.555 vs 0.446) will be the fair-minded reviewer's question; our
+answer is the admissibility column, and the honest caveat is finding #3 (our
+pass is a noisy-mean pass). Seeds 1-2 now running for all four baselines.
