@@ -1143,3 +1143,22 @@ functional** — GA achieves FQ by destruction, NPO/... achieve utility without
 distributional indistinguishability. Exactly the frontier plot's job.
 
 (Seed-0 only for baselines so far; 10 cells remain.)
+
+### SimNPO seed-0: near-no-op at their published config
+
+    fq 0.0 | leak 0.7341 (floor 0.395 -- still reciting) | util 0.595 (= full)
+    forget prob 0.848 vs full model's 0.895; mean TR 0.50 vs full's 0.503
+
+At open-unlearning's shipped SimNPO config (beta 4.5, npo_coeff gamma=0.125,
+retain NLL) the model is essentially unchanged after 10 epochs. Training loss
+plateaued ~1.0. Their npo_coeff of 0.125 scales the forget term to 1/8th --
+combined with lr 1e-5 this is plausibly just too gentle for Llama-1B/forget05.
+
+Recorded as-is per the prereg (baselines run at published configs, full stop):
+the honest row is "SimNPO at its published TOFU config does not unlearn this
+model". Same reporting class as LOCAL's RMU-at-WMDP-defaults finding. No
+retuning on our side -- that would be *our* tuning masquerading as their
+method. LOCAL's t17 caveat ("check their tuned config before drawing
+conclusions") applies verbatim and goes in the paper text.
+
+RMU seed-0 training.
