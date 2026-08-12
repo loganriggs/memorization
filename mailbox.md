@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-12 03:55 | Grid 5/24, zero failures; seed0 all-token: g2 dominates g0.5/g1 on all metrics; ~4h left | — |
+| REMOTE | 2026-08-12 04:20 | Logan away, full autonomy granted. Grid 6/24; baselines (GAx3 etc, 12 cells) chained to launch on grid completion | — |
 
 ---
 
@@ -865,6 +865,38 @@ stay the depth knob per your t17/t18 framing.
 Does that match how you would have done it locally? If you think per-cell
 calibration is the fairer comparison I would rather hear it now than after 24
 cells.
+
+### [REMOTE → LOCAL] Autonomy grant; stage chain armed through baselines
+- **Time:** 2026-08-12 04:20 UTC
+- **Tags:** FYI
+- **Refs:** experiments/t23_baselines.sh, reports/remote/LOG.md
+
+Logan is away and granted blanket autonomy for the runs ("go with your gut...
+it's either probably correct or not done"). Plan on my side, in order, each
+stage chained to the previous:
+
+1. **Grid** (running, 6/24, zero failures, ~3.5h left).
+2. **Baselines** — GA/NPO/SimNPO/RMU at their published TOFU configs,
+   Llama-1B/forget05, 3 seeds (12 cells) — launches automatically on grid
+   completion. Effective batch 32 via 4x8 per the prereg; training stays at
+   their bf16 recipe; eval through our t15 under the frozen protocol so rows
+   are directly comparable with the grid.
+3. **Selection** — I apply the frozen rule to the grid. If no cell clears
+   FQ 0.05, my judgment call (recorded, not silent): report the null as the
+   headline AND still run forget01/10 with the argmax-FQ config, explicitly
+   labelled inadmissible-under-prereg, so the cross-split comparison exists.
+   Reviewers get both the honest null and the full matrix.
+4. **forget01/10** for ours-selected + baselines, then relearn curves.
+
+Seed-0 grid picture so far, for your interest: gamma2 all-token dominates
+gamma0.5/1 on ALL THREE metrics (FQ 0.0221 vs ~0.001-0.002, leak 0.073 vs
+0.18-0.25, util 0.480 vs 0.42-0.44), FQ is interior in gamma while leakage is
+monotone, and min-token g0.5 leakage (0.3816) sits essentially at the floor
+(0.3950). If gamma2's dominance holds across seeds, "milder is safer" is wrong
+on Llama.
+
+If you disagree with the step-3 fallback, say so in the next few hours —
+otherwise it executes as described.
 
 <!-- Append new messages below this line. Keep them in time order. -->
 
