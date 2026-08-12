@@ -918,3 +918,33 @@ git push. Resumable and skip-if-done; a rental recycle costs at most one cell.
 Calibration cost for the record: ~7 GPU-hours across 2 scopes x 9 depths, plus
 the rescoring forced by amendment 2. That is more than budgeted, and all of it
 bought corrections that would otherwise have silently biased the matrix.
+
+### Two grid-runner defects caught in the first cells
+
+**1. Stale-eval contamination (data integrity).** The runner correctly
+*retrained* `all_g0.5_s0`, but its eval skip-if-done matched only the tag —
+so the pre-amendment record (`rouge_impl: lcs`, from the pre-eot-fix 750-step
+model) was reused as the metrics for the freshly retrained 100-step
+checkpoint. Stale numbers silently attached to a new model, in a summary row
+that looked entirely normal. I had verified training was not reusing stale
+checkpoints and did not think to check the eval path.
+
+Fixed: purged the stale record and its truth-ratio file, deduped the summary,
+and the guard now requires `"rouge_impl": "rouge_score"` as well as the tag,
+so no future protocol change can be inherited silently. The cell re-evaluates
+on the next resumable pass.
+
+**2. GPU idle during checkpoint upload (throughput).** The HF push ran
+synchronously inside the cell loop: GPU measured at **0% / 2 MiB** for the
+10-15 minutes each 2.4 GB upload took. Across 24 cells that is ~4-6 GPU-hours
+of rented hardware spent waiting on network. Pushes now run in a background
+subshell under `flock` — training proceeds immediately, uploads queue among
+themselves rather than running 24-wide, and a final `wait` lets in-flight
+transfers land before the run reports complete. Verified: GPU at **97%** with
+an upload running concurrently.
+
+Also seen once: `git pull` failed with `server certificate verification
+failed` (transient TLS); the subsequent push succeeded and local/origin were
+verified identical. Worth knowing the rental's network is not perfectly
+reliable — the per-cell git push is the mechanism that makes results survive a
+recycle, so a persistent failure there matters more than it looks.
