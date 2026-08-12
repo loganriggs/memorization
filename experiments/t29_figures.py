@@ -89,5 +89,48 @@ def main():
     print("wrote fig_frontier_forget05.png/.svg")
 
 
+def relearn_fig():
+    """Relearn curves: forget-set recovery vs relearn steps, one panel per lr,
+    method vs the retain-reference (never-knew) control."""
+    path = f"{RR}/t25_relearn.jsonl"
+    if not os.path.exists(path):
+        print("(no relearn data yet)")
+        return
+    rows = [json.loads(l) for l in open(path)]
+    curves = defaultdict(list)
+    for r in rows:
+        curves[(r["tag"].split("_lr")[0].replace("t25_", ""), r["lr"])].append(
+            (r["relearn_step"], r["forget_rouge"], r["forget_prob"]))
+    lrs = sorted({lr for _, lr in curves})
+    fig, axes = plt.subplots(1, len(lrs), figsize=(6.0 * len(lrs), 4.6),
+                             dpi=150, squeeze=False)
+    colors = {"control_retain95": "#888888"}
+    for j, lr in enumerate(lrs):
+        ax = axes[0][j]
+        for (name, l), pts in sorted(curves.items()):
+            if l != lr:
+                continue
+            pts.sort()
+            xs = [p[0] for p in pts]
+            ys = [p[1] for p in pts]
+            c = colors.get(name)
+            style = dict(ls="--", color="#888") if name.startswith("control")                 else dict(ls="-", color="#d62728")
+            ax.plot(xs, ys, marker="o", ms=4, lw=1.4,
+                    label=name.replace("_", " "), **style)
+        ax.axhline(0.3950, color="#bbb", lw=1, ls=":")
+        ax.text(1, 0.40, "never-knew floor", fontsize=7, color="#777")
+        ax.set_xlabel("relearn steps (AdamW, batch 4)")
+        ax.set_ylabel("forget-set gen ROUGE-L recall")
+        ax.set_title(f"lr = {lr:g}")
+        ax.set_ylim(0, 1)
+        ax.legend(fontsize=8, loc="lower right")
+    fig.suptitle("Relearn resistance, forget05 — selected config vs never-knew control")
+    fig.tight_layout()
+    for ext in ("png", "svg"):
+        fig.savefig(f"{RR}/fig_relearn_forget05.{ext}")
+    print("wrote fig_relearn_forget05.png/.svg")
+
+
 if __name__ == "__main__":
     main()
+    relearn_fig()
