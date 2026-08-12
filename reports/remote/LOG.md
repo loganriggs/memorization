@@ -1180,3 +1180,10 @@ distribution is unambiguously distinguishable (p = 0.0). The utility-vs-ours
 comparison (0.555 vs 0.446) will be the fair-minded reviewer's question; our
 answer is the admissibility column, and the honest caveat is finding #3 (our
 pass is a noisy-mean pass). Seeds 1-2 now running for all four baselines.
+
+### Seeds 1-2 underway; one transient push failure retried
+
+GA seed-1 training. RMU seed-0's HF push failed on a transient network error
+(xet write-token request) -- retried with backoff. Note the janitor's deletion
+criterion (API-verified safetensors on HF) is exactly what makes a failed push
+safe: the local weights stay until the retry lands, by construction.
