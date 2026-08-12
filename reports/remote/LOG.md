@@ -1332,3 +1332,29 @@ so a later recycle/destroy loses only what isn't on git/HF — which at this
 point is nothing scientific except the one parked checkpoint). Stopping is
 Logan's call, not mine — the 3B/8B extension decision determines whether this
 box is still needed.
+
+## POST-HOC PHASE (labeled; separate from the pre-registered matrix)
+
+Logan's questions after reading the figures drove three follow-ups:
+
+1. **Utility decomposition** (fig_utility_components): our deficit is entirely
+   retain-set collateral. Cause: the t14-inherited `[:400]` retain anchor cap
+   -- designed as 10:1 retain:forget coverage for Pythia/forget01, silently
+   degraded to 2:1 / ~10% coverage at forget05. Finding: the pin's suppression
+   generalizes across the TOFU distribution, so the retain bundle needs
+   coverage of the interference domain, not just examples. Full-retain is
+   parity, not cheating -- the baselines all train against the full split.
+2. **ours-v2 full-retain** (3 seeds, running): tests the diagnosis. Reported
+   post-hoc; FQ/leakage re-verified, never assumed.
+3. **Pareto sweeps** (queued behind v2): every method gets its
+   utility<->forgetting knob traced with the same eval battery --
+   NPO lr {1e-5*,2e-5,5e-5}, GA epochs {2,5,10*}, RMU steering {2*,5,20},
+   SimNPO forget-scaling {0.125*,1.0}, ours gamma {0.5..4} (* = published).
+   3 seeds each. Pareto checkpoints are metrics-only (weights deleted after
+   eval; HF capped, cells deterministic).
+
+Framing note for the paper, from Logan's over-forgetting question: TOFU's FQ
+is auditor-indistinguishability, under which over-forgetting is a (Streisand)
+failure; under a content-removal threat model over-forgetting is acceptable
+and all-token gamma4 (leak 0.035, util 0.469) is the matrix's best cell. The
+Pareto figure should carry both frontiers.
