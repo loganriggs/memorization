@@ -1093,3 +1093,16 @@ by hand. Lesson standing: never edit a running bash script, ever, including
 
 Chain state: marker written -> baselines launch; then t28 headline (min g4,
 steps 90/900 for f01/f10 per amendment 4) -> t25 relearn curves.
+
+### Baselines running; their evaluator kept as free cross-validation
+
+GA seed-0 trained (60 steps, their config: 10 epochs at effective batch 32).
+Their pipeline then runs open-unlearning's own TOFU evaluator regardless of
+`trainer.args.do_eval=False` (that flag governs the HF Trainer loop only) --
+the GPU idling at 0% during its CPU ROUGE passes briefly looked like a hang.
+
+Decision: keep their eval phase rather than kill/edit the running runner.
+It writes their evaluator's TOFU_EVAL.json alongside every baseline
+checkpoint, i.e. a free evaluator-agreement check on all 12 baseline cells
+(and editing a running bash script already burned us once tonight). Cost
+~2 h across the stage; revised baseline ETA ~5 h.
