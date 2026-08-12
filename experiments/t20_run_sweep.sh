@@ -1,5 +1,8 @@
 #!/bin/bash
-# Pre-registered forget05 gamma/scope sweep (prereg frozen at 96f8fec).
+# Pre-registered forget05 gamma/scope sweep (prereg frozen at 96f8fec,
+# amendments 1-2 applied: eot excluded from training labels, step count
+# selected on forget05, headline scorer = rouge_score).
+# T20_GRID_STEPS must be set to the calibrated step count before running.
 # 2 scopes x 4 gammas x 3 seeds = 24 cells, sequential and resumable:
 # skip-if-done, per-cell logs, explicit exit codes, HF push + git push per cell.
 #
@@ -11,12 +14,12 @@ cd "$(dirname "$0")"
 source /venv/main/bin/activate
 
 SPLIT=forget05
+STEPS="${T20_GRID_STEPS:?set T20_GRID_STEPS to the calibrated step count}"
 LOGDIR=results/t20_logs
 SUMMARY=../reports/remote/t20_forget05_sweep.jsonl
 mkdir -p "$LOGDIR"
 
 # Wait for the floor eval to release the GPU (matches its tag, not this script).
-while pgrep -f "floor_retain95_f05" > /dev/null; do sleep 30; done
 
 for seed in 0 1 2; do
   for scope in all min; do
@@ -28,7 +31,7 @@ for seed in 0 1 2; do
       # ---- train (skip if checkpoint already saved) ----
       if [ ! -f "$ckpt/config.json" ]; then
         for attempt in 1 2 3; do
-          python t20_llama_ours.py train "$scope" "$gamma" "$seed" "$SPLIT" \
+          T20_STEPS="$STEPS" python t20_llama_ours.py train "$scope" "$gamma" "$seed" "$SPLIT" \
             > "$LOGDIR/${tag}_train.log" 2>&1
           rc=$?
           echo "train $tag attempt $attempt exit=$rc" >> "$LOGDIR/sweep.log"
@@ -41,7 +44,7 @@ for seed in 0 1 2; do
       # ---- eval under the frozen headline protocol ----
       if ! grep -q "\"tag\": \"$efftag\"" results/t15_metrics.jsonl 2>/dev/null; then
         T15_TOK_ID="$ckpt" T15_FORGET_SPLIT=${SPLIT}_perturbed \
-        T15_TEMPLATE=llama3 T15_ROUGE=lcs T15_MAX_NEW=64 T15_TRUNCATE=1 \
+        T15_TEMPLATE=llama3 T15_ROUGE=rouge_score T15_MAX_NEW=64 T15_TRUNCATE=1 \
           python t15_tofu_metrics.py eval "$ckpt" "$efftag" \
           > "$LOGDIR/${tag}_eval.log" 2>&1
         echo "eval $tag exit=$?" >> "$LOGDIR/sweep.log"
