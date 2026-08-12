@@ -1187,3 +1187,21 @@ GA seed-1 training. RMU seed-0's HF push failed on a transient network error
 (xet write-token request) -- retried with backoff. Note the janitor's deletion
 criterion (API-verified safetensors on HF) is exactly what makes a failed push
 safe: the local weights stay until the retry lands, by construction.
+
+## HEADLINE — forget01 complete: admissible on every seed
+
+    seed   FQ p      leak     util     (floor 0.4136, ref util 0.5972)
+    s0     0.5786    0.3759   0.5005
+    s1     0.0541    0.3036   0.4777
+    s2     0.0971    0.4064   0.4964
+    mean   0.2433 -- ADMISSIBLE, and per-seed admissible too
+
+Nothing was selected on forget01: gamma/scope came from the frozen forget05
+rule, steps from amendment 4's constant-epoch transfer. This is out-of-split
+generalization of the pre-registered config -- the strongest form of the
+claim the prereg machinery was built to support. Consistent with finding #4,
+the n=40 regime is kinder to FQ (mean 0.243 vs forget05's 0.066), and per-seed
+passes appear exactly where power drops.
+
+forget10 (n=400, the harshest regime) is the remaining test: floor from
+retain90, then 3 cells at 900 steps.
