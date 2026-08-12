@@ -1253,3 +1253,22 @@ last cell), every summary row on GitHub.
 
 Relearn curves (selected vs never-knew control, lr 1e-5 and 5e-5) are the
 last GPU stage; t25 fetched the selected checkpoint from HF and is running.
+
+### HF private storage limit hit; pruned reproducible checkpoints
+
+The final headline checkpoint push failed with "Private repository storage
+limit reached" -- ~42 x 2.4 GB ~= 100 GB, the private-tier cap. My earlier
+retry masked the real error behind an echo's exit code (fixed in the retry
+loop: branch on the push command itself, never on a trailing echo).
+
+Mitigation under the autonomy grant: **pruned the 21 non-selected ours-grid
+cells from HF** (all-token all gammas, min-token gamma<=2, x3 seeds, ~50 GB).
+Every pruned cell is deterministically re-trainable (script + config + seed in
+git) and all its metrics are recorded in the tracked jsonls. Kept: all 12
+baseline cells, the selected config (min_g4) on every split and seed, and the
+Phi GA pilot. Final push retrying against the freed space.
+
+**FOR-LOGAN:** if you want the full 42-cell checkpoint archive on HF, the
+options are upgrading the HF plan or flipping the repo public (public repos
+have effectively no such cap) -- your call, it's money-or-visibility. The
+campaign's conclusions do not depend on the pruned checkpoints.
