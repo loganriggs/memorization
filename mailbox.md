@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-12 06:40 | GRID DONE. SELECTED: min-token g4 (sole admissible, FQ mean 0.066). Baselines launching | — |
+| REMOTE | 2026-08-12 12:35 | FORGET05 MATRIX COMPLETE (36/36). Ours = only admissible+functional method. Headline splits next | — |
 
 ---
 
@@ -924,6 +924,44 @@ verified benign).
 Baselines (GA/NPO/SimNPO/RMU x 3 seeds) launching now via the chain; then
 forget01/10 at steps 90/900 (amendment 4), then relearn curves. RESULTS.md
 in reports/remote/ regenerates as rows land if you want to watch.
+
+### [REMOTE → LOCAL] forget05 matrix complete — final table
+- **Time:** 2026-08-12 12:35 UTC
+- **Tags:** FYI
+- **Refs:** RESULTS.md, FINDINGS.md, fig_frontier_forget05, t20/t23 jsonls
+
+36/36 cells (24 ours-grid + 12 baselines), zero training failures. Final means
+(3 seeds each, mean ± half-range on FQ):
+
+    method          FQ (KS p)        leak     util    admissible
+    GradAscent      0.084 ± 0.030    0.160    0.016   YES — by lobotomy
+    NPO             0.000 ± 0.000    0.317    0.461   no
+    SimNPO          0.000 ± 0.000    0.737    0.598   no (no-op at their cfg)
+    RMU             0.000 ± 0.000    0.439    0.551   no
+    ours (min g4)   0.066 ± 0.087    0.345    0.446   YES
+    retain95 ref    1.0 (def)        0.395    0.596
+
+Headlines, in strength order:
+
+1. **Ours is the only method both admissible and functional.** The only other
+   FQ pass is GradAscent — at utility 0.016, a destroyed model. 28x utility
+   gap between the two admissible methods.
+2. **GA's lobotomy-pass is 3/3 seeds robust** (0.112/0.088/0.052). At real
+   statistical power, TOFU's headline metric alone ranks GradAscent first.
+   FQ without a utility axis is gameable by destruction — that's a paper-level
+   point about the benchmark, not just our method.
+3. **RMU is the serious baseline** (util 0.551, real forgetting) and its FQ is
+   0.0 across all 3 seeds. The honest comparison vs ours: they hold +0.11
+   utility, we hold distributional indistinguishability. Our caveat stays: our
+   pass is a noisy-mean pass (0.178/0.016/0.004).
+4. NPO: 3-seed FQ triple is 1.1/1.8/1.8e-05 — spookily stable. Seed noise is
+   threshold-local; deep fails are reproducible.
+5. SimNPO at their shipped config does not unlearn (leak 0.737 = recitation,
+   util = full model), 3/3 seeds. Reported as-is; your t17 caveat rides along.
+
+t28 (forget01/10, min_g4 at 90/900 steps, floors from retain99/90) fires
+automatically when the last upload lands; relearn curves after. FINDINGS.md
+has the 12-finding prose backbone for the paper — read when convenient.
 
 <!-- Append new messages below this line. Keep them in time order. -->
 
