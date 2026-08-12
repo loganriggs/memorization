@@ -1205,3 +1205,27 @@ passes appear exactly where power drops.
 
 forget10 (n=400, the harshest regime) is the remaining test: floor from
 retain90, then 3 cells at 900 steps.
+
+### forget10 seed-0: hard fail (2e-06) — and the mechanism is the ceiling
+
+    forget10 floor (retain90): leak 0.3849, util 0.5905
+    s0: FQ 2e-06 | leak 0.2999 | util 0.434 | mean TR 0.7323 vs ref 0.9488
+
+Cross-split FQ for the same pre-registered config, monotone in n:
+
+    forget01 (n=40):   mean 0.243   per-seed pass
+    forget05 (n=200):  mean 0.066   noisy-mean pass
+    forget10 (n=400):  s0 2e-06     (seeds 1-2 pending, deep fails are stable)
+
+Two forces compound: (1) KS power grows with n, demanding a closer
+distributional match; (2) min-token's depth ceiling (~0.73 mean TR here) sits
+BELOW forget10's reference (0.9488) — the same ceiling that prevented
+overshoot at forget05 becomes the binding constraint at forget10. The ceiling
+is a property of the method+model; the reference level varies by split. So the
+method's admissibility window is real but bounded: it passes where the
+reference is reachable from below at its plateau, and fails where n pushes the
+bar past its ceiling.
+
+Honest headline shape: admissible at forget01 and forget05, fails at forget10
+with an identified mechanism. That is a *boundary*, reported as one — not
+hidden, and considerably more informative than a uniform pass would have been.
