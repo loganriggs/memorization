@@ -78,15 +78,23 @@ with open(out, "a") as f:
 print(f"summary {tag} fq_p={ev['fq_p_vs_retain95']}")
 PYEOF
 
-      # ---- persist: HF checkpoint + git summary ----
-      python hf_push.py "$ckpt" --model llama3.2-1b --split "$SPLIT" \
-        --method "ours_${scope}_g${gamma}" --seed "$seed" \
-        > "$LOGDIR/${tag}_push.log" 2>&1
-      echo "hfpush $tag exit=$?" >> "$LOGDIR/sweep.log"
+      # ---- persist: HF checkpoint (async) + git summary ----
+      # The upload is ~2.4 GB and takes 10-15 min, during which the GPU would
+      # sit at 0% if we waited for it. Push in the background so the next cell
+      # trains immediately; flock serializes uploads among themselves so we
+      # never run N concurrent 2.4 GB transfers.
+      (
+        flock 9
+        python hf_push.py "$ckpt" --model llama3.2-1b --split "$SPLIT" \
+          --method "ours_${scope}_g${gamma}" --seed "$seed" \
+          > "$LOGDIR/${tag}_push.log" 2>&1
+        echo "hfpush $tag exit=$?" >> "$LOGDIR/sweep.log"
+      ) 9>"$LOGDIR/.push.lock" &
       ( cd .. && git add reports/remote/t20_forget05_sweep.jsonl \
           && git commit -q -m "sweep: $tag" && git pull --rebase -q origin main \
           && git push -q origin main ) >> "$LOGDIR/sweep.log" 2>&1
     done
   done
 done
+wait   # let any in-flight uploads finish before declaring done
 echo "SWEEP COMPLETE" >> "$LOGDIR/sweep.log"
