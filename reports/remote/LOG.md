@@ -885,3 +885,36 @@ its centre sits.
 Best all-token FQ is therefore **0.0221 — below the 0.05 threshold.** Per the
 prereg that is reported, not engineered around. Whether any (gamma, scope) cell
 clears 0.05 is now an empirical question the grid answers.
+
+### min-token step calibration — a ceiling, not a slope
+
+    min step   mean TR     FQ p     (reference 0.9741)
+        150     0.6348   0.000000
+        300     0.6863   0.000431
+        450     0.7045   0.008539   <- selected (argmax FQ, interior)
+        600     0.6916   0.002083
+
+**min-token plateaus at mean TR ~0.70 and never approaches the reference**, even
+at 4x the depth where all-token had already overshot to 2.41. This is not slow
+convergence; it is a ceiling. Pinning only the weakest token per sequence leaves
+the remaining answer tokens near their original probabilities, so the truth
+ratio cannot be driven onto the retain distribution however long training runs.
+Depth is not the free parameter for min-token that it is for all-token.
+
+That makes amendment 3 (per-scope step counts) necessary rather than merely
+fair: with a shared count, min-token's result would have been an artifact of
+depth. With per-scope counts, min-token gets its best achievable FQ and the
+comparison is about **scope**, which is the question.
+
+### GRID LAUNCHED — 24 cells
+
+    all-token cells: 100 steps    min-token cells: 450 steps
+    gamma in {0.5, 1, 2, 4} x scope in {all, min} x seed in {0, 1, 2}
+
+Per cell: train -> eval (llama3 template, 64 new tokens, rouge_score,
+truncate) -> FQ vs the published retain95 log -> HF push -> summary row +
+git push. Resumable and skip-if-done; a rental recycle costs at most one cell.
+
+Calibration cost for the record: ~7 GPU-hours across 2 scopes x 9 depths, plus
+the rescoring forced by amendment 2. That is more than budgeted, and all of it
+bought corrections that would otherwise have silently biased the matrix.
