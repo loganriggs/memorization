@@ -35,6 +35,12 @@ DEVICE = "cuda"
 MODEL_ID = "open-unlearning/tofu_Llama-3.2-1B-Instruct_full"
 OUT = "results/t20_llama.jsonl"
 PAIR = {"forget01": "retain99", "forget05": "retain95", "forget10": "retain90"}
+# Retain anchoring breadth. The campaign ran with the t14-inherited cap of 400
+# rows -- which left 3,400 of retain95's rows unanchored and produced the
+# retain-set collateral damage found in the utility decomposition (retain/prob
+# 0.33 vs reference 0.87 while real_authors/world_facts were fine). 0 = full split.
+RETAIN_CAP = int(os.environ.get("T20_RETAIN_CAP", "400"))
+TAG_SUFFIX = os.environ.get("T20_TAG_SUFFIX", "")
 
 
 def log(rec):
@@ -127,13 +133,15 @@ def stage_train():
     scope, gamma, seed, split = (sys.argv[2], float(sys.argv[3]),
                                  int(sys.argv[4]), sys.argv[5])
     assert scope in ("all", "min") and split in PAIR
-    tag = f"t20_{split}_{scope}_g{gamma:g}_s{seed}"
+    tag = f"t20_{split}_{scope}_g{gamma:g}_s{seed}{TAG_SUFFIX}"
     outdir = f"results/{tag}"
 
     tok = get_tok()
     forget = list(datasets.load_dataset("locuslab/TOFU", split, split="train"))
     retain = list(datasets.load_dataset("locuslab/TOFU", PAIR[split],
-                                        split="train"))[:400]
+                                        split="train"))
+    if RETAIN_CAP:
+        retain = retain[:RETAIN_CAP]
     steps = int(os.environ.get(
         "T20_STEPS", str(max(150, round(15 * len(forget) / 4 / 50) * 50))))
 
