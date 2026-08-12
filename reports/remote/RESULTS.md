@@ -26,7 +26,9 @@ steps: all-token 100, min-token 450 (per-scope calibration, amendment 3)
 
 ## Baselines (open-unlearning published configs, effective batch 32)
 
-*(pending — runs chained behind the grid)*
+| config | seeds | forget quality (KS p) | leakage (gen R-L) | model utility |
+|---|---|---|---|---|
+| gradascent | 1 | 0.1123 ± 0.0000 **✓** | 0.2071 ± 0.0000 | 0.0340 ± 0.0000 |
 
 ## Notes
 

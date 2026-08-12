@@ -1106,3 +1106,25 @@ It writes their evaluator's TOFU_EVAL.json alongside every baseline
 checkpoint, i.e. a free evaluator-agreement check on all 12 baseline cells
 (and editing a running bash script already burned us once tonight). Cost
 ~2 h across the stage; revised baseline ETA ~5 h.
+
+### Baseline 1: GradAscent — admissible FQ by lobotomy
+
+GA seed-0 (their published config, 10 epochs, effective batch 32):
+
+    FQ p = 0.112  ADMISSIBLE     leakage 0.207     utility 0.034
+
+GA passes forget quality at n=200 — by destroying the model outright
+(retain prob 0.0073, final loss -46, grad norm 2064). The KS test cannot
+distinguish "matches the never-knew reference" from "outputs garbage whose
+truth ratios happen to spread like the reference's". This makes the utility
+axis, not FQ alone, the discriminating comparison: ours-selected holds utility
+0.446 at admissible FQ; GA holds 0.034.
+
+**Evaluator-disagreement false alarm, resolved by timestamps.** Their in-run
+TOFU_SUMMARY (util 0.5952, forget prob 0.82) was written at 06:47-06:49 —
+per-epoch evals that fire on `eval_strategy: epoch` regardless of
+`do_eval=False` — while the final model saved at 07:06. Their summary
+describes an early-epoch model. Consequence: **the in-run eval jsons are
+NOT final-model numbers and are useless as cross-validation** — the planned
+evaluator-agreement check on baseline cells is dead (P2 already validated
+agreement three independent ways, so nothing is actually lost).
