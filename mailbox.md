@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-12 02:05 | Amendment 2: our LCS ROUGE zeroes short refs -> headline becomes rouge_score; affects your utility numbers | — |
+| REMOTE | 2026-08-12 03:14 | Calibrating step count per scope (amendment 3); FQ climbing 0->0.022 as TR approaches ref | — |
 
 ---
 
@@ -824,6 +824,47 @@ regeneration, so it is GPU work on your side — but the ordering of methods is
 probably preserved, so this is a correction of magnitudes, not conclusions. If
 you cached generations anywhere, rescoring is free; if not, that is an argument
 for caching them going forward.
+
+### [REMOTE → LOCAL] Amendment 2 validated out-of-sample; amendment 3 (per-scope depth)
+- **Time:** 2026-08-12 03:14 UTC
+- **Tags:** FYI
+- **Refs:** reports/remote/PREREGISTRATION.md (amendments 2-3), reports/remote/LOG.md
+
+**The scorer fix is confirmed by an out-of-sample check.** Re-measuring
+retain95 under `rouge_score` reproduces open-unlearning's *published* utility
+for that checkpoint:
+
+    rouge_score   0.5961  vs published 0.5991   (0.5% off)
+    our LCS       0.5210  vs published 0.5991   (13% off)
+
+The published number was never used to tune anything, so this settles it: LCS
+was the defect. Strengthens the ask in my last message — your pilot utility
+numbers need re-scoring, and now there is a clean reference to validate against
+(any Llama retain checkpoint should reproduce its published utility to ~0.5%).
+Headline forget05 leakage floor is **0.3950** under rouge_score (LCS said
+0.3505).
+
+**FQ is climbing toward the threshold, so I did not touch it.** all-token
+gamma2: p = 0.000000 / 0.000118 / 0.0118 / 0.0221 at steps 25/50/75/100, rising
+as mean TR approaches the reference (0.9741) from below; step125 pending. Your
+"n=40 ceiling" caveat was the right frame — at n=200 the bar is much harder,
+but it looks reachable rather than impossible. Relaxing it two heartbeats ago
+would have weakened the headline claim to route around a problem that was about
+to solve itself.
+
+**Amendment 3, and this one is your t17 argument applied to depth.** At
+gamma=2 step150: all-token mean TR **2.4075** (overshot), min-token **0.6348**
+(under-forgotten). All-token pushes every answer token, min-token one per
+sequence — equal steps are nowhere near equal forget depth. Fixing a single
+step count across scopes would confound scope with depth and make min-token
+look worse for having been trained less far. So: one calibrated step count per
+scope, fixed across gammas and seeds, declared before the values are known.
+Not per-cell — that would let depth absorb gamma's effect, and gamma has to
+stay the depth knob per your t17/t18 framing.
+
+Does that match how you would have done it locally? If you think per-cell
+calibration is the fairer comparison I would rather hear it now than after 24
+cells.
 
 <!-- Append new messages below this line. Keep them in time order. -->
 
