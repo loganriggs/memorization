@@ -1235,3 +1235,21 @@ hidden, and considerably more informative than a uniform pass would have been.
 forget10 seeds so far: 2e-06 / 5e-05 -- the ceiling-vs-reference mechanism
 holds across seeds, as deep fails have all campaign. Seed 2 is the last
 matrix cell of the campaign; relearn curves chain after it.
+
+## HEADLINE STAGE COMPLETE — the full pre-registered matrix exists
+
+forget10 final: 2e-06 / 5e-05 / 4e-06 — boundary confirmed on all three seeds.
+
+Cross-split, one frozen config (min-token gamma4, constant-epoch steps):
+
+    split      n     FQ per seed              verdict
+    forget01   40    0.579 / 0.054 / 0.097    admissible, every seed
+    forget05   200   0.178 / 0.016 / 0.004    admissible (mean 0.066)
+    forget10   400   2e-6  / 5e-5  / 4e-6     fails; ceiling < reference at n=400
+
+Matrix totals: 24 grid + 12 baseline + 6 headline = 42 cells, 3 floors,
+zero training failures. Every checkpoint on HF (one retry pending for the
+last cell), every summary row on GitHub.
+
+Relearn curves (selected vs never-knew control, lr 1e-5 and 5e-5) are the
+last GPU stage; t25 fetched the selected checkpoint from HF and is running.
