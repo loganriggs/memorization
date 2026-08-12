@@ -1372,3 +1372,17 @@ targets.) The interference diagnosis stands; the repair needs coverage AND
 pressure -- larger retain batch, higher retain weight, or proportionally more
 steps. Seeds 1-2 will confirm; if they do, the v3 shape is retain batch 4->16
 at unchanged forget batch. Babysit turn: logged, not launched.
+
+### v2 confirmed worse; tuned NPO s0 may flip the leaderboard
+
+v2 (full retain, same budget), all seeds: FQ {0.003, 0.221, 0.022} mean 0.082
+(admissible) but utility 0.416 and retain_prob 0.256 -- strictly worse than
+v1's 0.446/0.327. Coverage-without-pressure is settled: worse on 3/3 seeds.
+
+**Tuned NPO lr 2e-5, seed 0: FQ 0.7126, utility 0.533, retain_prob 0.611,
+leakage 0.299.** A deep FQ pass at utility well above ours. If seeds 1-2
+confirm, NPO with a fair tuning budget DOMINATES our selected config on every
+axis, and the paper's comparative claim must be rewritten accordingly: the
+honest headline becomes the mechanism findings (decoupling, ceiling,
+KS-shape, seed-noise, lobotomy-pass) rather than a leaderboard win. Logged
+before the confirming seeds land so the reading is not fitted to hope.
