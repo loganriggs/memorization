@@ -821,3 +821,37 @@ pre-registration exists to prevent. So:
   admissibility gate with an 8-order-of-magnitude FQ improvement is a finding,
   not a failure, and it is the reviewers' call whether p > 0.05 at n=200 is the
   right bar.
+
+### Amendment 2 independently validated by the published utility
+
+Re-measuring retain95 under `rouge_score` reproduces open-unlearning's
+**published** model utility for that checkpoint:
+
+    scorer        our retain95 utility   published   error
+    rouge_score                 0.5961      0.5991    0.5%
+    our LCS                     0.5210      0.5991     13%
+
+The short-reference sets move exactly as the punctuation diagnosis predicted:
+real_authors ROUGE 0.26 -> 0.8545, world_facts 0.33 -> 0.8462. This is
+independent confirmation that the LCS scorer was the defect and `rouge_score`
+is correct — the published number was never used to tune anything, so
+reproducing it to 0.5% is a genuine out-of-sample check.
+
+**Headline forget05 leakage floor is therefore 0.3950** (retain95, rouge_score,
+llama3 template, 64 new tokens). The LCS-measured 0.3505 is void for headline
+use, as amendment 2 declared.
+
+### FQ curve, continued — the threshold looks reachable after all
+
+    step   mean TR      KS p        (ref 0.9741)
+      25    0.6219   0.000000
+      50    0.6748   0.000118
+      75    0.7387   0.011843
+     150    2.4075   0.000649
+
+p rises steeply as mean TR approaches the reference **from below**, and steps
+100/125 sit exactly where the crossing should be. So p > 0.05 at n=200 may well
+be achievable for this method, and the decision last heartbeat not to amend the
+admissibility rule on one grid point looks correct — had I relaxed the
+threshold then, I would have permanently weakened the headline claim to work
+around a problem that was about to solve itself two calibration points later.
