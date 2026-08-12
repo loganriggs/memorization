@@ -45,7 +45,11 @@ for seed in 0 1 2; do
       fi
 
       # ---- eval under the frozen headline protocol ----
-      if ! grep -q "\"tag\": \"$efftag\"" results/t15_metrics.jsonl 2>/dev/null; then
+      # Skip only if a record exists for this tag AT THE CURRENT PROTOCOL.
+      # Matching the tag alone let a pre-amendment record (rouge_impl=lcs) be
+      # reused for a freshly retrained checkpoint -- stale metrics attached to
+      # a new model, invisible in the summary.
+      if ! grep -q "\"tag\": \"$efftag\".*\"rouge_impl\": \"rouge_score\"" results/t15_metrics.jsonl 2>/dev/null; then
         T15_TOK_ID="$ckpt" T15_FORGET_SPLIT=${SPLIT}_perturbed \
         T15_TEMPLATE=llama3 T15_ROUGE=rouge_score T15_MAX_NEW=64 T15_TRUNCATE=1 \
           python t15_tofu_metrics.py eval "$ckpt" "$efftag" \
