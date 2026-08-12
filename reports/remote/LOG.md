@@ -1284,3 +1284,20 @@ and even then reclamation is not immediate.**
 
 Relearn curves flowing: selected@lr1e-5 at step 20, forget prob 0.32->0.38.
 Control curve next; resistance claims wait for the control comparison.
+
+### Relearn lr=1e-5: no resistance — residual knowledge accelerates recovery
+
+    step        selected prob    control prob   (leak similar pattern)
+       0            0.197           0.130
+      40            0.460           0.307
+      80            0.596           0.414
+     160            0.782           (running)
+
+The selected config relearns FASTER than the never-knew control at every
+matched depth. Distributional indistinguishability (FQ pass) does not imply
+the knowledge is gone -- it is latently present and reconstructs more easily
+than learning from scratch. This is the honest completion of the story:
+admissible + functional, but NOT relearn-resistant, consistent with LOCAL's
+t18 (relearning is the hardest axis; first-order defenses fail under AdamW).
+For the paper: FQ measures indistinguishability at rest, not under attack --
+a third axis, and no tested method holds it.
