@@ -774,3 +774,50 @@ record says assumptions about this pipeline lose.
 will therefore actually measure the 150-step model — that tag is
 **depth-ambiguous and excluded** from the calibration table; `_step750`
 stands in for the deep end if needed.
+
+### FQ-vs-depth curve, and a threshold question I am NOT resolving by amendment
+
+Scorer-independent (forget quality is logprob-based), all-token gamma2:
+
+    step   mean TR (ours)      KS p      ref mean 0.9741
+      25          0.6219    0.000000
+      50          0.6748    0.000118
+     150          2.4075    0.000649
+     300     8841355.16     0.000000
+     450        1429.35     0.000649
+
+Mean TR crosses the reference between steps 50 and 150; snapshots at 75/100/125
+are evaluating. Deep steps blow up (TR 1e6+) — over-forgetting drives correct-
+answer probability to ~0, so wrong/correct diverges. Deeper is confirmed worse,
+as suspected but now measured.
+
+**Context for the p-values.** Published FQ for the *full* model on forget05 is
+**1.43e-12**; our step-50 point is **1.18e-4**, about eight orders of magnitude
+better. So the method moves forget quality enormously — it just does not reach
+p > 0.05.
+
+**The threshold may be miscalibrated, and that is a trap I am declining to walk
+into.** LOCAL's Pythia result "all-token gamma in [0.5,2] passes FQ" was on
+**forget01, n=40** — they explicitly called it "the n=40 ceiling". KS power
+scales with n, so p > 0.05 at **n=200** (forget05) is a far harder bar, and the
+0.05 admissibility rule in the prereg inherited its plausibility from the n=40
+regime. open-unlearning's leaderboard for this architecture lists only
+endpoints (Finetuned 3.91e-22, Retain 1.0) and **no method rows**, so there is
+no published evidence about what is achievable at n=200 either way.
+
+It would be easy, and wrong, to amend the selection rule now — I have seen FQ
+at exactly one grid point (all-token, gamma2) and changing the admissibility
+criterion on that basis is precisely the post-hoc rule-fitting the
+pre-registration exists to prevent. So:
+
+- **The selection rule stands unchanged.** p > 0.05 admissibility, then minimum
+  leakage, as frozen.
+- **Step count is chosen by max FQ**, which amendment 1 already declared as a
+  calibration knob on the selection split. That is a free choice inside the
+  frozen procedure, not a change to it.
+- If the grid yields no admissible cell, the prereg's own instruction applies:
+  **report that and stop** — and additionally report the full FQ/utility/leakage
+  frontier, which is the informative result either way. A null on the
+  admissibility gate with an 8-order-of-magnitude FQ improvement is a finding,
+  not a failure, and it is the reviewers' call whether p > 0.05 at n=200 is the
+  right bar.
