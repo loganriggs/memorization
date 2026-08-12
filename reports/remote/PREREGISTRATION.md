@@ -220,6 +220,26 @@ grid is not widened to manufacture a winner.
 Everything else — grid, scopes, seeds, admissibility threshold, selection rule,
 reporting conventions — remains untouched.
 
+## 3e. Amendment 4 (2026-08-12, before any forget01/10 scoring)
+
+**Step-count transfer across splits: constant sample-epochs.** The per-scope
+step counts were calibrated on forget05 (200 rows). For forget01/forget10 the
+same *sample-epoch* budget applies, so steps scale with split size:
+
+    scope        epochs (batch 4)    forget01   forget05   forget10
+    all-token    2   (100 x 4/200)         20        100        200
+    min-token    9   (450 x 4/200)         90        450        900
+
+Rationale: this is the field convention (open-unlearning's configs fix
+`num_train_epochs` across splits, so the baselines get exactly this treatment)
+and the calibration evidence says over/under-forgetting tracks optimization
+relative to set size. Fixed steps regardless of split would under-train
+forget10 and over-train forget01 relative to the calibrated point.
+
+Declared before any forget01/10 cell exists. Floors for forget01/10 are
+measured from retain99/retain90 under the frozen protocol before scoring, as
+with forget05.
+
 ## 4. Deviations that must be declared if they happen
 
 Any of these invalidates the pre-registration unless recorded here with a
