@@ -137,6 +137,44 @@ choices are allowed to be made.
 The gamma grid, scope set, seeds, admissibility threshold, selection rule and
 reporting conventions are untouched by this amendment.
 
+## 3c. Amendment 2 (2026-08-12, before any grid cell or forget01/10 scoring)
+
+**Headline ROUGE implementation changes from our LCS to `rouge_score`
+(rougeL recall, `use_stemmer=True`) — i.e. `T15_ROUGE=rouge_score`.**
+
+Cause: our LCS recall splits on whitespace and keeps punctuation attached, so
+a generation ending "...located in Paris, France" scores **0.000** against the
+reference "Paris", where `rouge_score` (which strips non-alphanumerics and
+stems) scores **1.000**. Measured on three world_facts items: LCS 0.000/1.000/
+0.000 vs rouge_score 1.000/1.000/1.000.
+
+Why this is not cosmetic:
+- `real_authors` and `world_facts` have **one-to-two-word references**, so a
+  single punctuation mismatch zeroes the item. These two sets contribute 6 of
+  the 9 terms in model utility.
+- The bias is **directional**: it punishes verbose answers, and unlearning
+  makes models more verbose. So LCS systematically understates the utility of
+  unlearned models relative to the full model — it would have manufactured a
+  utility collapse that the underlying generations do not show. The step-25
+  calibration point looked catastrophic (utility 0.372, real_authors ROUGE
+  0.81 -> 0.26) while its generations were in fact correct ("Paris", "Japan",
+  "Canberra" all present).
+- `rouge_score` is what official TOFU and open-unlearning use, so this also
+  moves us onto the standard implementation rather than a reimplementation.
+
+Consequences, all executed before any grid cell is scored:
+- The forget05 leakage floor is **re-measured** under `rouge_score`; the
+  LCS-measured 0.3505 is void for headline use.
+- Calibration snapshots are re-evaluated under `rouge_score` before the step
+  count is chosen. Forget quality is logprob-based and therefore unaffected —
+  the FQ calibration curve stands as measured.
+- LCS numbers remain available as an appendix column (`rouge_impl` is stamped
+  on every record), for continuity with the Pythia/Phi pilot series — whose
+  utility numbers carry the same artifact and should be re-scored before
+  publication.
+
+Grid, scopes, seeds, admissibility threshold and selection rule are untouched.
+
 ## 4. Deviations that must be declared if they happen
 
 Any of these invalidates the pre-registration unless recorded here with a
