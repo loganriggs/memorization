@@ -113,6 +113,30 @@ Seeds: **0, 1, 2**. Report **mean ± range** (not SD — n=3).
 - **Relearn curves** at **both** lr 1e-5 and 5e-5, against the retain-reference
   control. Relearning is lr-fragile (t18), so a single lr is not evidence.
 
+## 3b. Amendment 1 (2026-08-12, before any forget01/10 scoring)
+
+Declared after the first sweep cell and before any headline-split scoring;
+both changes are calibration on the selection split, which is where free
+choices are allowed to be made.
+
+1. **Training-label fix.** The Llama port initially included the trailing
+   `<|eot_id|>` in training labels (copied from the eval span). Pinning the
+   turn-terminator taught the model to never end its turn and destroyed
+   generation globally (cell `all_g0.5_s0`: forget ROUGE 0.015 vs floor
+   0.3505, utility 0.378). Training labels now cover answer-text tokens only,
+   restoring the t13/t14 protocol; the eval span keeps the eot for FQ
+   comparability (self-test unaffected).
+2. **Step count is selected on forget05, jointly with gamma/scope.** The t13
+   step scaling (750 for forget05) was calibrated on Pythia-410m and
+   over-forgets Llama-1B. Calibration: one run per scope at gamma=2 with
+   snapshots at {150,300,450,600,750}; each snapshot evaluated under the
+   frozen protocol and FQ-tested vs the published retain95 log. The chosen
+   step count is then FIXED for the whole grid and recorded here before the
+   grid runs. Admissibility and the selection objective are unchanged.
+
+The gamma grid, scope set, seeds, admissibility threshold, selection rule and
+reporting conventions are untouched by this amendment.
+
 ## 4. Deviations that must be declared if they happen
 
 Any of these invalidates the pre-registration unless recorded here with a

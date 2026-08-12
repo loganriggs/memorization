@@ -59,13 +59,23 @@ def load(path):
 
 
 def make_batch(tok, rows, max_len=320):
-    """Chat-template batch: ids/labels/mask, loss on the answer span only
-    (closing <|eot_id|> included, matching open-unlearning's labels)."""
+    """Chat-template batch: ids/labels/mask, loss on the ANSWER TEXT tokens only.
+
+    The trailing <|eot_id|> is present in ids (context) but EXCLUDED from
+    labels. Including it matched open-unlearning's eval span, but for training
+    it made the margin pin actively suppress the turn-terminator -- teaching
+    the model to never end its turn, which destroyed generation everywhere
+    (cell 1: forget ROUGE 0.015 vs floor 0.35, utility 0.378 at gamma 0.5).
+    t13/t14 never pinned a terminator; this restores that protocol. Eval (t15)
+    keeps the eot in ITS span -- that convention is for FQ comparability with
+    the published logs and is unaffected by training labels."""
     enc = []
     for r in rows:
         pids, aids = t15.split_ids(tok, r["question"], r["answer"])
+        aids_lab = aids[:-1] if aids and aids[-1] == tok.eos_token_id else aids
         ids = (pids + aids)[:max_len]
-        lab = ([-100] * len(pids) + aids)[:max_len]
+        lab = ([-100] * len(pids) + aids_lab)[:max_len]
+        lab = lab + [-100] * (len(ids) - len(lab))
         enc.append((ids, lab))
     L = max(len(e[0]) for e in enc)
     ids = torch.full((len(enc), L), tok.pad_token_id)
@@ -177,6 +187,12 @@ def stage_train():
             print(f"{tag} step {step}/{steps} loss {float(loss):.4f} "
                   f"forget_acc {facc.mean():.2f} min_margin {fmg.mean():.2f}",
                   flush=True)
+        # calibration snapshots: T20_SNAPSHOTS="150,300,450" saves depth-k
+        # checkpoints so step count can be selected on forget05 without rerun
+        if str(step + 1) in os.environ.get("T20_SNAPSHOTS", "").split(","):
+            model.save_pretrained(f"{outdir}_step{step + 1}")
+            tok.save_pretrained(f"{outdir}_step{step + 1}")
+            print(f"{tag} snapshot at step {step + 1}", flush=True)
         if step % 200 == 199:
             model.save_pretrained(outdir)
             tok.save_pretrained(outdir)
