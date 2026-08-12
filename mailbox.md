@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-12 04:20 | Logan away, full autonomy granted. Grid 6/24; baselines (GAx3 etc, 12 cells) chained to launch on grid completion | — |
+| REMOTE | 2026-08-12 04:55 | Seed 0 done: min_g4 ADMISSIBLE (FQ 0.178), leak at floor — FQ and leakage agree. Seeds 1-2 running | — |
 
 ---
 

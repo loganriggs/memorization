@@ -978,3 +978,41 @@ exactly (same config), which is a good reproducibility sign for the harness.
 
 Pace: all-token ~7 min/cell, min-token ~16 min/cell (450 steps), zero FATALs,
 uploads running concurrently. Remaining ~19 cells ~= 3.9 h.
+
+### Seed 0 complete (8/8): first admissible cell, and the metrics agree with each other
+
+    cell          FQ p       leak     util    admissible
+    all g0.5    0.000967   0.2520   0.4159
+    all g1      0.002083   0.1847   0.4388
+    all g2      0.022092   0.0735   0.4803
+    all g4      0.002083   0.0466   0.4772
+    min g0.5    0.003010   0.3816   0.4397
+    min g1      0.000184   0.3726   0.4404
+    min g2      0.008539   0.3614   0.4329
+    min g4      0.177934   0.3844   0.4517   YES     (floor 0.3950 / util 0.5961)
+
+**min-token gamma4 clears the bar at p=0.178** — the only cell that does.
+
+The coherence check: the one cell whose truth-ratio distribution is
+statistically indistinguishable from the retain reference (FQ pass) is also
+the one whose generation leakage (0.3844) sits essentially AT the reference's
+own leakage (0.3950). Both metrics independently say the same thing: min_g4
+*resembles a never-knew model* rather than an aggressively-suppressed one.
+All-token cells drive leakage far below the floor — visible over-suppression —
+and fail FQ; min-token's per-sequence ceiling turns out to be a feature at
+high gamma: enough depth to match the reference, structurally prevented from
+overshooting it.
+
+Notable inversion vs Pythia (LOCAL t17): there, all-token gamma in [0.5,2]
+passed (at n=40) and gamma8 over-forgot; here at n=200 on Llama, all-token
+never passes and min-token gamma4 does. The scope story is model- and
+n-dependent — which is itself a finding for the writeup.
+
+Also: the gamma2->gamma4 jump inside min scope (0.0085 -> 0.178) is large. The
+450-step calibration was done at gamma2 per amendment 3's declared procedure;
+it transferred well to gamma4. Luck or robustness, but the procedure was fixed
+in advance either way.
+
+Seeds 1-2 decide: admissibility is on MEAN FQ across 3 seeds. If min_g4 holds,
+the frozen rule selects it outright and the INADMISSIBLE_FALLBACK path is
+never taken. ~2.5 h remain; baselines chained behind.
