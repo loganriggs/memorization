@@ -855,3 +855,33 @@ be achievable for this method, and the decision last heartbeat not to amend the
 admissibility rule on one grid point looks correct — had I relaxed the
 threshold then, I would have permanently weakened the headline claim to work
 around a problem that was about to solve itself two calibration points later.
+
+### all-token step calibration complete — interior optimum at step 100
+
+    step   mean TR     FQ p       (reference 0.9741)
+      25    0.6219   0.000000
+      50    0.6748   0.000118
+      75    0.7387   0.011843
+     100    0.8536   0.022092   <- selected (argmax FQ)
+     125    1.0472   0.000184
+     150    2.4075   0.000649
+     300    8.84e+06 0.000000
+     450    1429.35  0.000649
+     600     68.1017 0.000000
+
+The optimum is **interior**, so the scan brackets it properly rather than
+running into the edge of what was tried.
+
+**A result worth stating carefully:** at step 125 the mean truth ratio (1.0472)
+is *closer* to the reference (0.9741) than step 100's 0.8536, yet FQ collapses
+from 0.0221 to 0.000184. The KS test is rejecting on **distribution shape**, not
+location — so "move the mean onto the reference" is not the same objective as
+"pass forget quality", and any tuning that targets the mean will miss. This also
+means the admissibility bar is not simply a matter of training longer or
+shorter: at n=200 the whole TR distribution has to match, and our unlearned
+distribution has a different shape from the retain model's regardless of where
+its centre sits.
+
+Best all-token FQ is therefore **0.0221 — below the 0.05 threshold.** Per the
+prereg that is reported, not engineered around. Whether any (gamma, scope) cell
+clears 0.05 is now an empirical question the grid answers.
