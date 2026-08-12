@@ -1038,3 +1038,23 @@ Worth pre-writing the interpretation fork:
   must then be explicit that "minimum leakage among admissible" optimizes
   suppression *given* statistical indistinguishability, and the min_g4 point
   remains the distribution-matching exhibit.
+
+### Grid 23/24 — selection effectively decided
+
+min_g1_s2 (0.0002) and min_g2_s2 (0.0043) landed low: both configs are now
+final-inadmissible. **min_g4 is the sole admissible config** (mean locked
+> 0.05 since seed 1); its seed-2 cell is the last one training. t24 executes
+the formal selection on the complete grid via the armed chain, then baselines
+launch automatically.
+
+Final grid means (3 seeds except min_g4 pending its s2):
+
+    all-token: FQ 0.002-0.013 (all inadmissible), leakage 0.03-0.25 (deep
+               suppression), utility 0.42-0.48
+    min-token: FQ ~0.001-0.005 for gamma<=2 (inadmissible), leakage ~0.37-0.39
+               (at floor), utility 0.42-0.46
+    min_g4:    FQ mean >= 0.065 whatever s2 brings; leakage ~0.37; utility ~0.45
+
+The final story survived seed averaging: the admissible cell is the one that
+RESEMBLES the never-knew reference (leakage at floor) rather than maximally
+suppressing; every deep suppressor fails distributional indistinguishability.
