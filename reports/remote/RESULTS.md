@@ -29,6 +29,7 @@ steps: all-token 100, min-token 450 (per-scope calibration, amendment 3)
 | config | seeds | forget quality (KS p) | leakage (gen R-L) | model utility |
 |---|---|---|---|---|
 | gradascent | 1 | 0.1123 ± 0.0000 **✓** | 0.2071 ± 0.0000 | 0.0340 ± 0.0000 |
+| npo | 1 | 0.0000 ± 0.0000 | 0.3153 ± 0.0000 | 0.4602 ± 0.0000 |
 
 ## Notes
 

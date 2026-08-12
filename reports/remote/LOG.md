@@ -1128,3 +1128,18 @@ describes an early-epoch model. Consequence: **the in-run eval jsons are
 NOT final-model numbers and are useless as cross-validation** — the planned
 evaluator-agreement check on baseline cells is dead (P2 already validated
 agreement three independent ways, so nothing is actually lost).
+
+### NPO seed-0: the two-axis split emerges
+
+    method (s0)   FQ            util     reading
+    GA            0.112  pass   0.034    admissible by lobotomy
+    NPO           1.1e-5 fail   0.460    functional, but distinguishable
+    ours min_g4   0.066  pass   0.446    both (3-seed mean)
+
+NPO preserves utility at ours' level but its truth-ratio distribution stays
+far from the reference. If this holds across seeds and for SimNPO/RMU, the
+matrix headline is: **ours is the only method simultaneously admissible and
+functional** — GA achieves FQ by destruction, NPO/... achieve utility without
+distributional indistinguishability. Exactly the frontier plot's job.
+
+(Seed-0 only for baselines so far; 10 cells remain.)
