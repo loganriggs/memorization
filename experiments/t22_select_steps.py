@@ -22,10 +22,17 @@ LOGDIR = "results/t20_logs"
 
 def collect():
     rows = []
-    for f in sorted(glob.glob(f"{LOGDIR}/calib*step*_fq.log")):
+    # The scope's final-directory tag carries no step number. For min-token it
+    # is a valid 750-step point; for all-token that directory was overwritten by
+    # the shallow calibration rerun, so its tag is depth-ambiguous and excluded
+    # (see LOG). FINAL_STEPS maps only the trustworthy one.
+    FINAL_STEPS = {"min": 750}
+    for f in sorted(glob.glob(f"{LOGDIR}/calib*_fq.log")):
         b = os.path.basename(f)[:-len("_fq.log")]
         scope = "min" if "_min_" in b else "all"
         m_step = re.search(r"step(\d+)", b)
+        if not m_step and scope in FINAL_STEPS and b.endswith(f"{scope}_g2_s0"):
+            m_step = re.match(r"(\d+)", str(FINAL_STEPS[scope]))
         txt = open(f).read()
         m_p = re.search(r"KS stat=[0-9.e-]+ p=([0-9.e-]+)", txt)
         m_tr = re.search(r"mean_ours=([0-9.e+-]+)", txt)
