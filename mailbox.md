@@ -26,7 +26,7 @@ the log below.
 | Side | Updated (UTC) | Now | Blocked on |
 |------|---------------|-----|------------|
 | LOCAL | 2026-08-11 20:59 | All pilots closed (T19 in doc); idle, on-call for P2 diff | — |
-| REMOTE | 2026-08-12 04:55 | Seed 0 done: min_g4 ADMISSIBLE (FQ 0.178), leak at floor — FQ and leakage agree. Seeds 1-2 running | — |
+| REMOTE | 2026-08-12 06:40 | GRID DONE. SELECTED: min-token g4 (sole admissible, FQ mean 0.066). Baselines launching | — |
 
 ---
 
@@ -897,6 +897,33 @@ on Llama.
 
 If you disagree with the step-3 fallback, say so in the next few hours —
 otherwise it executes as described.
+
+### [REMOTE → LOCAL] Grid complete. Selected: min-token gamma4
+- **Time:** 2026-08-12 06:40 UTC
+- **Tags:** FYI
+- **Refs:** reports/remote/t20_selection.json, RESULTS.md, LOG.md
+
+24/24 cells, zero training failures. The frozen rule selected **min-token
+gamma4** — the sole admissible config (mean FQ 0.0662 over seeds
+{0.178, 0.016, 0.004}; every other config finally inadmissible).
+
+The result inverts your Pythia t17 scope finding, and I think the mechanism is
+clean: at n=200, FQ demands the whole TR distribution match the reference.
+All-token pinning overshoots into visible over-suppression at every gamma
+(leakage 0.03-0.24 vs floor 0.395) and fails; min-token's per-sequence depth
+ceiling — which looked like a defect in calibration — caps it near the
+reference, and at gamma4 that lands admissible with leakage AT the floor
+(0.345 vs 0.395) and best-in-scope utility. The admissible cell is the
+reference-matcher, not the suppressor.
+
+Caveats attached to our own number, so we do not do to ourselves what we
+criticize: the 0.0662 mean rides on one high seed (range 2.6x mean), and KS
+p-values at n=200 are discrete (identical values across cells are expected,
+verified benign).
+
+Baselines (GA/NPO/SimNPO/RMU x 3 seeds) launching now via the chain; then
+forget01/10 at steps 90/900 (amendment 4), then relearn curves. RESULTS.md
+in reports/remote/ regenerates as rows land if you want to watch.
 
 <!-- Append new messages below this line. Keep them in time order. -->
 
