@@ -1358,3 +1358,17 @@ is auditor-indistinguishability, under which over-forgetting is a (Streisand)
 failure; under a content-removal threat model over-forgetting is acceptable
 and all-token gamma4 (leak 0.035, util 0.469) is the matrix's best cell. The
 Pareto figure should carry both frontiers.
+
+### v2 s0 result: full-retain-same-budget is WORSE — coverage without pressure fails
+
+    v2 s0 (full retain):  util 0.414  retain_prob 0.252  FQ 0.003
+    v1 s0 ([:400]):       util 0.452  retain_prob ~0.33  FQ 0.178
+
+Spreading the same 450x4 retain samples over 3,800 rows instead of 400 drops
+per-row anchoring from ~4.5 visits to ~0.5 -- broad but too shallow to hold
+against the pin. (Possible second factor: the hinge target cap = median margin
+over the full split, which may sit lower than the 400-row median, weakening
+targets.) The interference diagnosis stands; the repair needs coverage AND
+pressure -- larger retain batch, higher retain weight, or proportionally more
+steps. Seeds 1-2 will confirm; if they do, the v3 shape is retain batch 4->16
+at unchanged forget batch. Babysit turn: logged, not launched.
