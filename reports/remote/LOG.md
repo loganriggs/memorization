@@ -1557,3 +1557,22 @@ Ground truth from the t33 run (identical trainer): 450 steps ≈ 2 min
 ours-all ≈ 30 s, baselines ≈ 20 min (60 steps × 8 accum fwd/bwd at batch 4
 under their HF trainer). Sample budgets remain matched (~1,800 vs 1,920
 forget visits); wall-clock ours is ~10x cheaper, not slower.
+
+## 2026-08-13 05:0x UTC — RWKU PILOT QUEUED (Logan: "do queue up the #4 realistic benchmark")
+
+t35_rwku.py + t35_run.sh launched in background; blocks on the overnight
+chain's RELEARN2 COMPLETE marker, then runs:
+  basecheck: rank all 200 RWKU targets by base Llama-3.2-1B knowledge
+    (level-2 QA ROUGE, 10 probes each) -> pilot = top-10 known targets
+  baseeval x10: base-model reference rows (full probe suite, <=40/level)
+  {ga, npo, ours} x 10 targets: unlearn on the target's wiki passages
+    (2 epochs, batch 4; ga lr1e-5 ascent / npo lr2e-5 beta0.1 / ours
+    all-token pin gamma2 + KL anchor on non-pilot targets' passages —
+    extra-data use DECLARED), eval forget l1/l2/l3 + neighbor l1/l2,
+    then delete weights (30 x 2.4GB would fill the disk).
+Base model: unsloth/Llama-3.2-1B-Instruct mirror (meta-llama gated, same
+weights) — NOT the TOFU fine-tune; this is pretrained knowledge.
+Protocol stamps: greedy max_new 32, rouge_score, probes capped at 40/level.
+Pilot config is DECLARED-NOT-TUNED; findings will note lr sensitivity per
+the t23 lesson. Summary: results/t35_rwku.jsonl -> reports mirror.
+Marker: RWKU PILOT COMPLETE in results/t20_logs/rwku.log.
