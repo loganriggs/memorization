@@ -14,7 +14,7 @@ rows = [json.loads(l) for l in open("results/t35_rwku.jsonl")
         if '"forget_mean"' in l or "forget_mean" in l]
 rows = [r for r in rows if "forget_mean" in r]
 base = {r["k"]: r for r in rows if r["tag"].startswith("t35_base")}
-COLORS = {"ga": "#2ca02c", "npo": "#9467bd", "ours": "#d62728"}
+COLORS = {"ga": "#2ca02c", "npo": "#9467bd", "ours": "#d62728", "hybrid": "#e6873c"}
 
 pts = defaultdict(list)   # method -> [(neighbor_kept, forget_drop)]
 for r in rows:
@@ -45,9 +45,9 @@ a.legend(fontsize=8, loc="lower left")
 keys = [("forget_l1", "cloze"), ("forget_l2", "QA"),
         ("forget_l3", "adversarial"), ("neighbor_l1", "neigh cloze"),
         ("neighbor_l2", "neigh QA")]
-methods = ["ga", "npo", "ours"]
+methods = [m for m in ("ga", "npo", "ours", "hybrid") if m in pts]
 x = np.arange(len(keys))
-w = 0.22
+w = 0.8 / max(len(methods), 1)
 for i, m in enumerate(methods):
     vals = []
     for key, _ in keys:
@@ -55,7 +55,7 @@ for i, m in enumerate(methods):
               if not r["tag"].startswith("t35_base")
               and r["tag"].split("_")[1] == m]
         vals.append(100 * np.mean(fr))
-    bx.bar(x + (i - 1) * w, vals, w, color=COLORS[m], label=m)
+    bx.bar(x + (i - (len(methods)-1)/2) * w, vals, w, color=COLORS[m], label=m)
 bx.axhline(100, color="#888", lw=1, ls=":")
 bx.set_xticks(x)
 bx.set_xticklabels([lbl for _, lbl in keys], fontsize=9)

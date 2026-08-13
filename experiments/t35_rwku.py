@@ -178,7 +178,7 @@ def pilot_subjects():
 
 def stage_train():
     method, k = sys.argv[2], int(sys.argv[3])
-    assert method in ("ga", "npo", "ours")
+    assert method in ("ga", "npo", "ours", "hybrid")
     subject = pilot_subjects()[k]
     tag = f"t35_{method}_t{k}"
     outdir = f"results/{tag}"
@@ -192,14 +192,14 @@ def stage_train():
 
     ref = None
     anchor = None
-    if method in ("npo", "ours"):
+    if method in ("npo", "ours", "hybrid"):
         from transformers import AutoModelForCausalLM
         ref = AutoModelForCausalLM.from_pretrained(
             mid, dtype=torch.bfloat16, attn_implementation="sdpa").to(DEVICE)
         ref.eval()
         for p in ref.parameters():
             p.requires_grad_(False)
-    if method == "ours":
+    if method in ("ours", "hybrid"):
         # KL anchor corpus: passages of non-pilot targets (ranked 100-200)
         ranking = json.load(open(TARGETS_F))["ranking"]
         others = [r["subject"] for r in ranking[100:150]]
@@ -231,6 +231,32 @@ def stage_train():
                 lp_ref, _ = seq_logprob(ref, ids, labels, mask)
             beta = 0.1
             loss = (-2.0 / beta) * F.logsigmoid(-beta * (lp - lp_ref)).mean()
+        elif method == "hybrid":
+            # joint champion, RWKU port: NPO forget loss on passages + our
+            # anchor side (per-token logprob restoration + KL) on other-entity
+            # text (the lp pin substitutes for TOFU's gold-answer restoration)
+            lp_h, mh = seq_logprob(model, ids, labels, mask)
+            with torch.no_grad():
+                lp_hr, _ = seq_logprob(ref, ids, labels, mask)
+            beta = 0.1
+            floss = (-2.0 / beta) * F.logsigmoid(-beta * (lp_h - lp_hr)).mean()
+            ai = torch.randperm(len(anchor), generator=g)[:bs].tolist()
+            aids, alab, am = passage_batch(tok, [anchor[j] for j in ai])
+            lg_a = model(input_ids=aids, attention_mask=am).logits.float()
+            with torch.no_grad():
+                lg_ar = ref(input_ids=aids, attention_mask=am).logits.float()
+            kl = F.kl_div(F.log_softmax(lg_a, -1), F.log_softmax(lg_ar, -1),
+                          log_target=True, reduction="none").sum(-1)
+            kl = (kl * am).sum() / am.sum()
+            lsm = F.log_softmax(lg_a[:, :-1], -1)
+            lab_a = alab[:, 1:]
+            ma = lab_a != -100
+            lpa = lsm.gather(-1, lab_a.clamp(min=0).unsqueeze(-1)).squeeze(-1)
+            with torch.no_grad():
+                lsm_r = F.log_softmax(lg_ar[:, :-1], -1)
+                lpa_r = lsm_r.gather(-1, lab_a.clamp(min=0).unsqueeze(-1)).squeeze(-1)
+            lp_hinge = (F.relu(lpa_r - lpa) * ma).sum() / ma.sum()
+            loss = floss + lp_hinge + kl
         else:  # ours: all-token margin pin + KL anchor on other-entity text
             lg = model(input_ids=ids, attention_mask=mask).logits.float()
             lab = labels[:, 1:]

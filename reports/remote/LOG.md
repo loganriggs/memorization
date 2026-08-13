@@ -1677,3 +1677,25 @@ Zero failed exits, 19 cells total. Results (3-seed means unless noted):
 fig_pareto regenerated with the hybrid group (t30 extended). Note the irony
 for the paper narrative: the joint composition Logan doubted is the auditor
 champion; his sequential proposal is the content-removal champion.
+
+## 2026-08-14 03:0x UTC — t39 MASTER CHAIN LAUNCHED (Logan: reproducibility + "are we sure no baseline is better?")
+
+Four phases (t39_run.sh, marker T39 COMPLETE, ~14h):
+R. Champions rebuilt deterministically (joint npolp x3, seq min/all x3),
+   re-eval verification (_r2 tags, deltas logged), weights KEPT and pushed
+   to HF as hybrid_joint / hybrid_seq_min / hybrid_seq_all.
+B. Baseline completeness: every open-unlearning-shipped method we skipped,
+   at shipped defaults, 3 seeds, forget05: GradDiff, WGA, SatImp, UNDIAL,
+   CEU, PDU + AltPO (generated alternate answers + DPO trainer, lr
+   {1e-5,2e-5} — same 2x budget NPO got). Summary: t39_newbaselines.jsonl.
+C. Champion relearn curves (t25 both lrs: hybrid_joint, seq_all, seq_min
+   seed 0) + t34 RRS rerun.
+D. RWKU pilot for the hybrid method (NPO-forget + lp/KL anchor port) x 10
+   targets; t36 figure regenerated with 4th method.
+Literature audit result (for the paper's related-work honesty): within
+open-unlearning, the 1B community leaderboard has NO method entries — no
+posted number beats ours. Outside the framework, unrun recent claims to
+declare: ATWU (arXiv 2606.06320, learned token-level importance — SOTA
+claims on TOFU+RWKU, conceptually adjacent to our token-level pin), UCD
+(contrastive decoding, inference-time), BLUR, FLAT (ICLR25), UIPE,
+DualOptim+. Running them faithfully = future work; noted to avoid strawmen.
