@@ -1628,3 +1628,18 @@ paraphrase/jailbreak attackers, ours is the best functional point on real
 knowledge; under collateral-minimization, NPO. Same personalities as TOFU.
 Caveats: single declared config per method (no tuning grids), 1 seed, 10
 targets, 1B model. fig_rwku_pilot.png/svg, t36_rwku_figure.py committed.
+
+## 2026-08-13 22:0x UTC — t37 LAUNCHED: v1<->v3 Pareto dial + NPO hybrid (Logan)
+
+Logan asked (a) whether the v1/v3 tradeoff traces a curve, (b) whether ours
+composes with NPO. t37_llama_hybrid.py + t37_run.sh (background, marker T37
+COMPLETE in t37.log):
+- mix lam {0.25,0.5,0.75} x 3 seeds: retain = (1-lam)*margin_hinge +
+  lam*logprob_pin + KL; forget side unchanged (min-token pin g4). Endpoints
+  lam=0 (v1) and lam=1 (v3-lppin) already measured.
+- npolp: NPO's reference-anchored forget loss (beta 0.1, sequence-sum) with
+  OUR retain side (logprob pin + KL). Calibrate lr {1e-5, 2e-5} on seed 0,
+  best by (admissible, utility), then seeds 1-2.
+13 cells, ~11 min each; weights deleted after eval (re-derivable), summary
+reports/remote/t37_hybrid_forget05.jsonl. Smoke-tested at 3 steps first.
+Hypothesis: hybrid lands near (util 0.578, fq 0.63) — above both parents.
