@@ -103,6 +103,15 @@ Pareto comparison (finding 13–14, fig_pareto_forget05, PARETO.md).
     Every method tested has RRS < 0 — relearn resistance remains an open
     problem for the field, and RRS is the metric to target. [t34; RRS.md]
 
+18. **Method personalities transfer from implanted to real pretrained
+    knowledge (RWKU pilot).** GA lobotomizes (93.5% forget removal, 7.5%
+    neighbor kept); NPO is gentlest (59.9% / 75.1%) but leaves cloze-style
+    memorization 83% intact and adversarial paraphrase probes recover 47%
+    of base; ours is the deepest functional point (86.5% / 55.8%, cloze to
+    9%, adversarial to 22%). Token-level margin pinning transfers to
+    completion-style extraction; sequence-preference losses do not.
+    [t35_rwku.jsonl; fig_rwku_pilot; single config, 1 seed, 10 targets]
+
 ## Evaluator/protocol findings (reproducibility section)
 
 8. **A single trailing space in a prompt template costs 0.09 ROUGE** on

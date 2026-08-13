@@ -1609,3 +1609,22 @@ Finding: at-rest suppression depth ANTI-correlates with relearn resistance.
 all_g4_s0 retrain reproduced the recorded cell (leak 0.047 vs 0.035, util
 0.477 vs 0.469, fq 0.0021 vs 0.0021 — nondeterminism-level drift, same
 character). Artifacts: t34_rrs.json, RRS.md, fig_relearn_all.
+
+## 2026-08-13 13:0x UTC — RWKU PILOT COMPLETE: methods keep their personalities on real knowledge
+
+71/71 stage-exits zero. 10 targets (Morrison, FDR, Aristotle, Beyoncé, ...),
+base-normalized means (t35_rwku.jsonl; fig_rwku_pilot):
+            forget-removed%  neighbor-kept%  adv-probe-kept%
+  GA              93.5             7.5             6.9    (lobotomy, again)
+  NPO             59.9            75.1            46.6    (gentlest)
+  ours            86.5            55.8            22.2    (deepest functional)
+Probe-level: NPO's forgetting deficit is concentrated in CLOZE probes (83%
+of base retained — sequence-level DPO loss barely touches fill-in-the-blank
+memorization); ours removes cloze to 9%. Ours' neighbor collateral is also
+concentrated in cloze (21% kept) while neighbor QA survives (67%).
+Interpretation: token-level margin pinning transfers to completion-style
+extraction; sequence-preference losses do not. Under content-removal with
+paraphrase/jailbreak attackers, ours is the best functional point on real
+knowledge; under collateral-minimization, NPO. Same personalities as TOFU.
+Caveats: single declared config per method (no tuning grids), 1 seed, 10
+targets, 1B model. fig_rwku_pilot.png/svg, t36_rwku_figure.py committed.
