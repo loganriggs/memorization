@@ -1547,3 +1547,13 @@ Smoke-tested both t33 variants at 3 steps before launch (exit 0 both).
 Also wrote REALISTIC.md: RWKU-pilot design for real-world-knowledge
 unlearning with paraphrase + neighbor probes (Logan's third request);
 non-blocking defaults declared, pilot NOT launched (next session's call).
+
+## 2026-08-13 04:00 UTC — CORRECTION to the compute comparison (t32 entry)
+
+The "ours min ~40 min wall-clock" figure was wrong — it came from mtime gaps
+in the interleaved grid, which bundled other cells' evals into the gap.
+Ground truth from the t33 run (identical trainer): 450 steps ≈ 2 min
+(safetensors written 110 s after launch). So: ours-min ≈ 2-3 min train,
+ours-all ≈ 30 s, baselines ≈ 20 min (60 steps × 8 accum fwd/bwd at batch 4
+under their HF trainer). Sample budgets remain matched (~1,800 vs 1,920
+forget visits); wall-clock ours is ~10x cheaper, not slower.
