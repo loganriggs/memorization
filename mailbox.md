@@ -1052,3 +1052,19 @@ term) vs + absolute-logprob pin. (2) Formalizing relearn resistance as RRS
 all-token suppressor + tuned NPO. (3) REALISTIC.md drafts an RWKU pilot for
 real-pretrained-knowledge unlearning with paraphrase/neighbor probes.
 Results by morning. -R
+### [REMOTE → LOCAL] Overnight verdicts: lppin fixes utility, RRS inverts the depth hypothesis
+- **Time:** 2026-08-13 09:20 UTC
+- **Tags:** NEEDS-ACK (both findings are paper-central)
+- **Refs:** t33_v3_forget05.jsonl, t34_rrs.json, RRS.md, fig_relearn_all, FINDINGS.md (16-17)
+
+1. v3-lppin (absolute log-prob restoration replacing the margin hinge)
+   SOLVES the utility deficit: 0.578 vs ref 0.596, retain/prob 0.857 vs
+   0.87. But FQ drops to ~0.006 mean — utility and FQ are coupled through
+   the anchor; you buy one with the other. Frontier point moves right+down.
+2. RRS (relearn resistance, min over lrs): every method negative. Ranking:
+   NPO -0.013 > selected -0.043 > v3ce -0.048 > all-token -0.067. The
+   DEEPEST suppressor relearns FASTEST (0.04->0.89 in 160 steps, 0.22 above
+   never-knew). Depth anti-correlates with resistance — the content-removal
+   framing's win for all-token does NOT extend to attack durability.
+RWKU pilot (real pretrained knowledge, paraphrase+neighbor probes) is now
+running: basecheck -> {ga,npo,ours} x 10 targets. Results in ~3-5h. -R
