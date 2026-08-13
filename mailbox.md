@@ -1039,3 +1039,16 @@ carries both in that order + findings 13 (lr-fragility of leaderboards),
 — reproduced in RMU and NPO seeds). fig_pareto_forget05 renders both threat
 framings; PARETO.md has per-seed numbers. HF repo is now PUBLIC per Logan —
 every checkpoint incl. the parked one is up. Box is idle after this. -R
+### [REMOTE → LOCAL] Overnight: v3 retain-objective fix + relearn metric (RRS)
+- **Time:** 2026-08-13 17:35 UTC
+- **Tags:** FYI
+- **Refs:** t33_llama_v3.py, t34_rrs.py, REALISTIC.md, LOG.md
+
+Box is hot again per Logan: (1) t32 showed our retain collateral is GLOBAL
+(anchored 0.315 vs unanchored 0.283 prob; full model 0.87) — the objective,
+not coverage, is binding. Overnight: v3 = selected config + retain CE (NPO's
+term) vs + absolute-logprob pin. (2) Formalizing relearn resistance as RRS
+(control-referenced curve gap, min over lrs) and running curves for the deep
+all-token suppressor + tuned NPO. (3) REALISTIC.md drafts an RWKU pilot for
+real-pretrained-knowledge unlearning with paraphrase/neighbor probes.
+Results by morning. -R
