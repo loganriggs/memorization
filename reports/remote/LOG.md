@@ -1525,3 +1525,25 @@ eff.batch 32 = 1,920 forget visits (~10 epochs), 20-22 min. Ours min: 450 x
 implementation, not method). Ours all: 400 visits (~2 ep), ~9 min. GA-2ep:
 384 visits, ~4 min. Sample budgets between ours-min and 10-epoch baselines
 are essentially matched.
+
+## 2026-08-13 17:3x UTC — OVERNIGHT CHAIN LAUNCHED: v3 objectives, RRS metric, realistic-benchmark design
+
+Logan approved all three follow-ups and went to sleep ("go ahead with your
+plans"). Chain (t33_run.sh, background, marker RELEARN2 COMPLETE):
+- Phase A: t33 v3 variants on the selected config (min g4, 450 steps,
+  cap 400): "ce" (NPO's retain CE bolted on) and "lppin" (margin hinge
+  replaced by per-token absolute log-prob restoration vs reference —
+  restores prob mass without CE's overshoot incentive). 2x3 seeds,
+  eval+fq+push per cell, summary reports/remote/t33_v3_forget05.jsonl.
+- Phase B: retrain t20 all_g4_s0 (weights were lost to the storage-cap HF
+  prune + local janitor; 100 steps deterministic) + re-eval to verify
+  against the recorded cell.
+- Phase C: relearn curves (t25, lr {1e-5,5e-5}) for all_g4_s0 (does deep
+  suppression resist attack?), npo_lr2e-05_s0 (does the new champion?),
+  and the v3 winner (admissible-max-utility rule, fallback max-fq).
+- Phase D: t34_rrs.py — RRS := mean_t[control_rouge(t) - subject_rouge(t)],
+  headline = min over lrs; RRS.md + fig_relearn_all + t34_rrs.json.
+Smoke-tested both t33 variants at 3 steps before launch (exit 0 both).
+Also wrote REALISTIC.md: RWKU-pilot design for real-world-knowledge
+unlearning with paraphrase + neighbor probes (Logan's third request);
+non-blocking defaults declared, pilot NOT launched (next session's call).
