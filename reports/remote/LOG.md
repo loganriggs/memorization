@@ -1470,3 +1470,30 @@ Artifacts: t30_pareto.py → fig_pareto_forget05.png/svg (two panels: auditor
 FQ-vs-utility + content-removal leakage-vs-utility with never-knew floor),
 PARETO.md (full table with per-seed FQ). FINDINGS.md: headline rewritten to
 the two-claim ordering; findings 13–15 added.
+
+## 2026-08-13 15:0x UTC — t31: FQ anatomy + utility decomposition with tuned NPO (Logan Qs)
+
+Analysis only, no training. t31_fq_anatomy.py renders from stored evals/TRs.
+
+1. **v2 full-retain hurt, quantified per component:** utility 0.447→0.417
+   (worse 3/3 seeds); retain/prob 0.327→0.256, retain/rouge 0.454→0.389.
+   Coverage without pressure: 450 steps over 3,800 rows = ~0.5 visits/row.
+2. **Where tuned NPO keeps utility ours loses:** almost entirely retain/prob
+   (0.62 vs our 0.33; ref 0.87) and retain/rouge (0.45 vs 0.45→ ours v1 equal
+   there) — see fig_utility_components_v2. real_authors/world_facts are
+   comparable across all functional methods.
+3. **FQ anatomy (fig_fq_anatomy):** KS D vs retain95 reference, per seed:
+   ours {0.110,0.155,0.175} D̄=0.147; NPO 2e-5 {0.070,0.090,0.065} D̄=0.075;
+   GA 10ep {0.120,0.125,0.135} D̄=0.127. n=200 admissibility bar ≈ D 0.136.
+   Ours straddles the bar (hence threshold seed-noise); NPO is well inside.
+   Mechanism visible in the ECDF: min-token pin drives every sequence to a
+   similar depth → under-dispersed TR distribution missing the reference's
+   BOTH tails (late start ~0.25, early saturation ~1.3). NPO's distribution
+   matches including tails. GA's "pass" is a destruction coincidence — KS
+   sees only forget-set TRs; the utility axis catches the dead model.
+4. **Published-config discrepancy noted for the paper:** their repro table
+   reports NPO forget05 FQ 0.14 (single seed, 2xL40s DeepSpeed); our 3-seed
+   single-GPU rerun of the same config: p≈1.6e-5. Consistent with their own
+   caveat ("results may vary... single GPU") and finding 3. Their docs also
+   flag the NPO-implementation inconsistency carried into SimNPO's codebase
+   (their note 3) — relevant to the "NPO is bad" literature narrative.
