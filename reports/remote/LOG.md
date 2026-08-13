@@ -1643,3 +1643,14 @@ COMPLETE in t37.log):
 13 cells, ~11 min each; weights deleted after eval (re-derivable), summary
 reports/remote/t37_hybrid_forget05.jsonl. Smoke-tested at 3 steps first.
 Hypothesis: hybrid lands near (util 0.578, fq 0.63) — above both parents.
+
+## 2026-08-13 22:3x UTC — t37b QUEUED: sequential pin-on-NPO (Logan's refinement)
+
+Logan: joint loss "possibly isn't that great — just do the normal pin on the
+existing NPO SOTA saved result". t37b_seqpin.py: init from the saved tuned
+NPO checkpoint (lr 2e-5, per-seed pairing), apply margin pin + v3 retain
+side (logprob pin + KL toward the FULL model). {min g4 200 steps, all g4
+100 steps} x 3 seeds, weights deleted after eval. Queued behind T37 COMPLETE
+(joint-loss cells kept — they give the joint-vs-sequential comparison).
+Marker: T37B COMPLETE. Analysis after: extended frontier with lambda dial,
+joint hybrid, sequential hybrid; refresh section 5.7.
