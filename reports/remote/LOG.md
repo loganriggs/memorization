@@ -1497,3 +1497,31 @@ Analysis only, no training. t31_fq_anatomy.py renders from stored evals/TRs.
    caveat ("results may vary... single GPU") and finding 3. Their docs also
    flag the NPO-implementation inconsistency carried into SimNPO's codebase
    (their note 3) — relevant to the "NPO is bad" literature narrative.
+
+## 2026-08-13 16:3x UTC — t32: retain damage is GLOBAL, not a coverage problem
+
+Logan Qs continued. t32_retain_examples.py (inference only; selected min-γ4
+seed0 re-fetched from HF) vs full model, TOFU prob metric on retain95:
+  anchored rows [0:400]:    0.867 -> 0.315
+  unanchored rows [400:800]: 0.885 -> 0.283
+Anchoring bought only ~0.03 locally — the collateral spreads through shared
+parameters. This kills the "we only anchored 400 of 3,800" coverage
+hypothesis properly (v2's failure already hinted): the binding problem is
+the retain OBJECTIVE, not retain coverage. The margin hinge restores rank
+margins and the KL preserves distribution shape; neither pushes absolute
+gold-answer probability mass back. NPO's retain term is plain CE (NLL) —
+it directly maximizes the exact quantity that is utility's weakest
+component. Mechanical explanation of the 0.62-vs-0.33 retain/prob gap, and
+the obvious v3: add a retain CE (or absolute-logprob pin) term.
+
+Qualitative (in t32 log): our retain generations keep the GIST (genres,
+motifs, award classes) but lose verbatim phrasing and confabulate entity
+specifics (book titles, award names). "Forgetting retain facts" = verbatim/
+confidence stripping + edge confabulation, not blank-out.
+
+Compute (trainer_state + log mtimes, forget05): baselines 60 opt steps x
+eff.batch 32 = 1,920 forget visits (~10 epochs), 20-22 min. Ours min: 450 x
+4 = 1,800 visits (~9 epochs), ~40 min (batch 4, grad-ckpt, 3 fwd/step —
+implementation, not method). Ours all: 400 visits (~2 ep), ~9 min. GA-2ep:
+384 visits, ~4 min. Sample budgets between ours-min and 10-epoch baselines
+are essentially matched.

@@ -1,0 +1,6 @@
+{
+ "full|anchored[0:400]": 0.8671364748477935,
+ "full|unanchored[400:800]": 0.8851491564512253,
+ "ours_selected|anchored[0:400]": 0.31469825476408003,
+ "ours_selected|unanchored[400:800]": 0.2824669251590967
+}
