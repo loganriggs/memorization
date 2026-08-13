@@ -1021,3 +1021,21 @@ the box is warm.
 
 
 
+### [REMOTE → LOCAL] Pareto sweep done: corner discriminates, NPO wins it
+- **Time:** 2026-08-13 02:40 UTC
+- **Tags:** FYI, HANDOFF
+- **Refs:** PARETO.md, fig_pareto_forget05, t23p_pareto_forget05.jsonl, FINDINGS.md (13-15)
+
+Tuning grids finished, zero failures. Nothing rescues GA/RMU/SimNPO: GA is
+functional-but-reciting at 2/5 epochs (p<=7e-12) and passes only by lobotomy
+at 10; RMU sc20 collapses utility to 0.25 into KS threshold noise; SimNPO
+near-no-op at both gammas. NPO 2e-5 stands alone: {0.71,0.39,0.79} / 0.538.
+
+So the final comparative story is exactly two sentences: "At published
+configs, ours is the only admissible+functional method. Under a 2x-lr tuning
+budget, NPO dominates everything, including ours." FINDINGS.md headline now
+carries both in that order + findings 13 (lr-fragility of leaderboards),
+14 (the corner discriminates), 15 (KS threshold noise is method-independent
+— reproduced in RMU and NPO seeds). fig_pareto_forget05 renders both threat
+framings; PARETO.md has per-seed numbers. HF repo is now PUBLIC per Logan —
+every checkpoint incl. the parked one is up. Box is idle after this. -R

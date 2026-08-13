@@ -1,20 +1,25 @@
 # Campaign findings — remote phase (Llama-3.2-1B, TOFU)
 
 Prose companion to `RESULTS.md` (tables) and `LOG.md` (chronology). Each
-finding cites where its evidence lives. Status: baselines in progress;
-forget01/10 and relearn curves pending.
+finding cites where its evidence lives. Status: campaign complete, including the post-hoc tuning-budget Pareto sweep.
 
-## Headline (pending completion of baselines/seeds)
+## Headline (final)
 
-**On TOFU forget05 at n=200, our selected method (min-token margin pin, γ=4,
-with retain hinge + KL anchor) is the only method tested that is
-simultaneously *admissible* (forget quality KS p > 0.05 vs the published
-retain reference) and *functional* (model utility within 25% of the retain
-reference).** Baselines at their published configs each fail one axis:
-GA passes FQ by destroying the model (utility 0.034); NPO stays functional
-(0.460) but distributionally distinguishable (p ≈ 1e-5); SimNPO barely moves
-the model at all (leakage 0.734, still reciting). [RESULTS.md;
-fig_frontier_forget05]
+Two claims, in this order:
+
+**(1) At published configs, our selected method (min-token margin pin, γ=4,
+retain hinge + KL anchor) is the only method tested that is simultaneously
+*admissible* (forget quality KS p > 0.05 vs the published retain reference)
+and *functional* (model utility 0.446 vs reference 0.596) on forget05.**
+GA passes FQ by destroying the model (utility 0.02); NPO stays functional
+(0.460) but distinguishable (p ≈ 1.6e-5); SimNPO/RMU: p ≈ 0.
+
+**(2) Under an equal tuning budget, tuned NPO (lr 2e-5, 2x published)
+dominates ours on every axis:** FQ per-seed passes {0.71, 0.39, 0.79},
+utility 0.538, leakage 0.29. Claim (1) is real but fragile — it survives
+only until any baseline gets a 2x learning-rate grid. The durable
+contributions are the methodology findings below and the tuning-budget
+Pareto comparison (finding 13–14, fig_pareto_forget05, PARETO.md).
 
 ## Methodological findings (each independently useful)
 
@@ -58,6 +63,29 @@ fig_frontier_forget05]
    protocol (all-token: overshoot by step 150 vs calibrated 750). Step-count
    protocols do not transfer across models. [LOG: amendment 1]
 
+13. **Fixed-config leaderboard comparisons are lr-fragile to the point of
+    meaninglessness.** NPO at its published lr 1e-5 is hopeless (p ≈ 1.6e-5);
+    at 2e-5 it deep-passes on every seed at utility 0.538 — from "fails the
+    benchmark" to "best method tested" inside a 2x lr change. Leaderboards
+    that compare methods at fixed shipped configs are measuring config
+    staleness, not method quality. Compare tuning-budgeted Pareto frontiers.
+    [PARETO.md; fig_pareto_forget05]
+
+14. **The admissible+functional corner discriminates between methods —
+    most cannot reach it at any tested setting.** Same budget (one knob,
+    2–3 settings, 3 seeds each): GA never matches the reference
+    distribution while functional (p ≤ 7e-12 at 2/5 epochs, util 0.54–0.59);
+    it "passes" only via lobotomy (10 ep, util 0.02). RMU trades utility
+    steeply (steering 20: util 0.25) and lands in threshold noise
+    {3e-4, 3e-3, 0.55} without per-seed admissibility. SimNPO barely moves
+    the model at either γ. Only NPO and ours reach the corner.
+    [PARETO.md; fig_pareto_forget05]
+
+15. **KS threshold-noise reproduces in tuned baselines.** RMU sc20 seeds
+    span {3e-4, 0.55}; NPO 5e-5 spans {0.004, 0.47} — the same 2-orders
+    seed spread our method showed near the admissibility threshold
+    (finding 3). The noise is a property of KS-at-n=200, not of any method.
+
 ## Evaluator/protocol findings (reproducibility section)
 
 8. **A single trailing space in a prompt template costs 0.09 ROUGE** on
@@ -97,3 +125,7 @@ fig_frontier_forget05]
   caveat — their tuned configs may differ — appears alongside the row.
 - RMU runs their TOFU config, not WMDP defaults (which do not forget at all;
   LOCAL t16/t17).
+- Post-hoc tuning grids (NPO lr {2e-5, 5e-5}, GA epochs {2, 5}, RMU steering
+  {5, 20}, SimNPO γ 1.0) are labeled as tuned in every table/figure and kept
+  distinct from published-config rows. Ours was NOT further tuned in this
+  phase; its γ grid was pre-registered.

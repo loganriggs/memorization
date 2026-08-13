@@ -1445,3 +1445,28 @@ the parked `t28_forget10_min_g4.0_s2` push then succeeded on first retry.
 
 Pareto sweep progress at this point: seed-0 block 4/5 done (ga_2ep, ga_5ep,
 rmu_sc5, rmu_sc20 all exit=0), simnpo_g1_s0 just started. ~25–30 min/cell.
+
+## 2026-08-13 02:3x UTC — PARETO SWEEP COMPLETE: no tuning rescues GA/RMU/SimNPO
+
+POSTHOC2 marker written; 15/15 cells, 45 stage-exits, zero failures. The
+runner captured exit codes only, so FQ p-values were recomputed from the
+stored truth-ratio jsons (deterministic KS; sink: t23p_pareto_forget05.jsonl).
+
+3-seed means (fq / util / leak):
+- GA 2ep:      1e-13 / 0.587 / 0.668   (functional, still reciting)
+- GA 5ep:      4e-12 / 0.545 / 0.472
+- RMU sc5:     5e-11 / 0.542 / 0.420
+- RMU sc20:    0.18{3e-4,3e-3,.55} / 0.250 / 0.261  (threshold noise again)
+- SimNPO γ1:   1e-10 / 0.592 / 0.514   (still near-no-op)
+- NPO 2e-5:    0.633 {.71,.39,.79} / 0.538 / 0.286  ← the only tuned point
+  reaching the admissible+functional corner; dominates ours (0.066/0.446).
+
+Conclusion: the corner discriminates. GA never matches the reference
+distribution while functional (passes only via lobotomy at 10ep/util 0.02);
+RMU collapses utility before reaching admissibility; SimNPO barely moves.
+Only NPO and ours get there under equal budget, and NPO wins.
+
+Artifacts: t30_pareto.py → fig_pareto_forget05.png/svg (two panels: auditor
+FQ-vs-utility + content-removal leakage-vs-utility with never-knew floor),
+PARETO.md (full table with per-seed FQ). FINDINGS.md: headline rewritten to
+the two-claim ordering; findings 13–15 added.
