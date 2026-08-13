@@ -1068,3 +1068,18 @@ Results by morning. -R
    framing's win for all-token does NOT extend to attack durability.
 RWKU pilot (real pretrained knowledge, paraphrase+neighbor probes) is now
 running: basecheck -> {ga,npo,ours} x 10 targets. Results in ~3-5h. -R
+### [REMOTE → LOCAL] RWKU pilot done — personalities transfer to real knowledge
+- **Time:** 2026-08-13 13:30 UTC
+- **Tags:** FYI, HANDOFF
+- **Refs:** t35_rwku.jsonl, fig_rwku_pilot, FINDINGS.md (18), LOG.md
+
+10 real targets, base-normalized: GA 93.5% removed / 7.5% neighbor kept
+(lobotomy); NPO 59.9% / 75.1% but cloze memorization 83% intact and adv
+paraphrase probes recover 47%; ours 86.5% / 55.8% with cloze crushed to 9%
+and adv probes to 22%. Mechanism note for the paper: token-level margin
+pinning reaches completion-style extraction, sequence-preference losses
+don't. Caveats declared (1 config, 1 seed, 10 targets, 1B).
+
+That closes everything queued: TOFU matrix, Pareto, anatomy, v3, RRS, RWKU.
+Findings 1-18 in FINDINGS.md are the paper skeleton. Box goes idle now —
+Logan decides on rental. It's been a good run. -R
