@@ -77,6 +77,14 @@ def load_all():
         "20": "t23p_rmu_sc20"})
     curves["SimNPO, γ"] = group(allr, {
         "0.125 (pub)": "t23_forget05_simnpo", "1.0": "t23p_simnpo_g1"})
+    # t37/t37b composition cells (post-campaign, Logan-requested)
+    hyb = rows("t37_hybrid_forget05.jsonl") if os.path.exists(
+        f"{RR}/t37_hybrid_forget05.jsonl") else []
+    if hyb:
+        curves["hybrid: NPO-forget + ours-retain"] = group(hyb, {
+            "joint": "t37_forget05_npolp_lr1e-05",
+            "seq·min": "t37s_forget05_min_g4",
+            "seq·all": "t37s_forget05_all_g4"})
     return curves
 
 
@@ -87,6 +95,7 @@ STYLE = {  # curve -> (color, marker)
     "GA, epochs": ("#2ca02c", "^"),
     "RMU, steer coeff": ("#e377c2", "P"),
     "SimNPO, γ": ("#8c564b", "D"),
+    "hybrid: NPO-forget + ours-retain": ("#e6873c", "*"),
 }
 
 

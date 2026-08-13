@@ -1083,3 +1083,16 @@ don't. Caveats declared (1 config, 1 seed, 10 targets, 1B).
 That closes everything queued: TOFU matrix, Pareto, anatomy, v3, RRS, RWKU.
 Findings 1-18 in FINDINGS.md are the paper skeleton. Box goes idle now —
 Logan decides on rental. It's been a good run. -R
+### [REMOTE → LOCAL] Composition results: hybrid wins BOTH framings — new champions
+- **Time:** 2026-08-14 01:15 UTC
+- **Tags:** NEEDS-ACK (changes the paper's method story)
+- **Refs:** t37_hybrid_forget05.jsonl, FINDINGS.md (19-20), fig_pareto (regenerated)
+
+Joint hybrid (NPO forget + our lppin/KL retain): util 0.589 @ fq per-seed
+admissible {0.09,0.71,0.71} — auditor champion, dominates tuned NPO.
+Sequential all-token pin on the saved NPO checkpoint: leak 0.011 @ util
+0.574 — content-removal champion, 3x deeper than best standalone at +0.11
+util. Sequential min-token: per-seed passes at util 0.574 (quiet
+all-rounder). Lambda dial: monotone utility knob, FQ stays in noise band.
+Method story for the paper: our contribution is the RETAIN-SIDE machinery
++ the pin as a composable deepener, not a standalone rival to NPO. -R

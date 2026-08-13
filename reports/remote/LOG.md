@@ -1654,3 +1654,26 @@ side (logprob pin + KL toward the FULL model). {min g4 200 steps, all g4
 (joint-loss cells kept — they give the joint-vs-sequential comparison).
 Marker: T37B COMPLETE. Analysis after: extended frontier with lambda dial,
 joint hybrid, sequential hybrid; refresh section 5.7.
+
+## 2026-08-14 01:0x UTC — T37/T37B COMPLETE: composition wins both framings
+
+Zero failed exits, 19 cells total. Results (3-seed means unless noted):
+- JOINT hybrid (NPO forget loss + our lppin+KL retain), lr 1e-5:
+  fq 0.504 {0.088, 0.713, 0.713} — admissible EVERY seed — utility 0.589
+  (reference 0.596), leak 0.241. NEW AUDITOR-FRAMING CHAMPION: dominates
+  tuned NPO (0.633/0.538) on utility at per-seed-admissible FQ. lr 2e-5
+  calibration arm was worse (0.178/0.519) — the pin side wants the lower lr.
+- SEQUENTIAL all-token pin g4 on the saved tuned-NPO checkpoint (Logan's
+  idea): leak 0.011 at utility 0.574 3/3 seeds (fq 0, as expected for deep
+  suppression). NEW CONTENT-REMOVAL CHAMPION: previous best deep suppressor
+  was leak 0.035 @ util 0.469; NPO-first + retain-side-held preserves +0.11
+  utility at 3x deeper suppression.
+- SEQUENTIAL min-token: fq 0.077 {0.112, 0.052, 0.068} per-seed passes,
+  util 0.574, leak 0.342 — a quieter all-rounder, strictly dominates v1.
+- LAMBDA DIAL (mix): utility rises monotonically with lambda: v1 0.447 ->
+  0.497 (0.25) -> 0.528 (0.5) -> 0.558 (0.75) -> 0.578 (lppin); FQ wobbles
+  in the threshold-noise band {0.071, 0.012, 0.132} with no clean trend.
+  It is a utility dial at ~constant noisy-low FQ, not a smooth FQ tradeoff.
+fig_pareto regenerated with the hybrid group (t30 extended). Note the irony
+for the paper narrative: the joint composition Logan doubted is the auditor
+champion; his sequential proposal is the content-removal champion.

@@ -112,6 +112,22 @@ Pareto comparison (finding 13–14, fig_pareto_forget05, PARETO.md).
     completion-style extraction; sequence-preference losses do not.
     [t35_rwku.jsonl; fig_rwku_pilot; single config, 1 seed, 10 targets]
 
+19. **The methods compose — and composition wins both threat models.**
+    NPO's reference-anchored forget loss with our logprob-pin+KL retain side
+    (joint training) reaches utility 0.589 at per-seed-admissible FQ
+    {0.09, 0.71, 0.71} — dominating every standalone method under the
+    auditor framing. Applying the all-token margin pin ON TOP of the saved
+    tuned-NPO checkpoint (sequential) reaches leakage 0.011 at utility
+    0.574 — 3x deeper suppression than the best standalone suppressor at
+    +0.11 utility — winning the content-removal framing. The retain-side
+    machinery (logprob pin + KL) is what lets both compositions spend
+    aggressively on forgetting. [t37_hybrid_forget05.jsonl; fig_pareto]
+
+20. **The retain-objective mix is a monotone utility dial, not an FQ
+    tradeoff.** Interpolating margin-hinge -> logprob-pin (lambda 0 -> 1)
+    raises utility strictly monotonically (0.447 -> 0.578) while FQ wobbles
+    inside the KS threshold-noise band with no trend. [t37 mix cells]
+
 ## Evaluator/protocol findings (reproducibility section)
 
 8. **A single trailing space in a prompt template costs 0.09 ROUGE** on
