@@ -1576,3 +1576,36 @@ Protocol stamps: greedy max_new 32, rouge_score, probes capped at 40/level.
 Pilot config is DECLARED-NOT-TUNED; findings will note lr sensitivity per
 the t23 lesson. Summary: results/t35_rwku.jsonl -> reports mirror.
 Marker: RWKU PILOT COMPLETE in results/t20_logs/rwku.log.
+
+## 2026-08-13 09:0x UTC — OVERNIGHT CHAIN COMPLETE: v3 verdict + RRS verdict
+
+Zero failed exits across all phases. RELEARN2 COMPLETE written; RWKU pilot
+auto-released.
+
+**v3 (retain objective fix), 3-seed means:**
+- lppin: utility 0.578 (v1: 0.447; reference 0.596), retain_prob 0.857
+  (reference 0.87) — THE UTILITY DEFICIT IS SOLVED by absolute-logprob
+  restoration. FQ mean 0.0055 {2.8e-4, 0.016, 1.8e-5}.
+- ce: utility 0.522, retain_prob 0.614, FQ mean 0.0098.
+- v1 comparison: FQ mean 0.066 was carried by one seed (0.178); all six v3
+  seeds sit below 0.017. Reading: restoring absolute prob mass pulls the
+  model toward the FULL model's distribution, and the forget-set TR
+  distribution moves with it — utility and FQ trade off through the same
+  KL/lp anchor. The frontier point moves right and down.
+
+**RRS (relearn resistance, headline = min over lrs, ROUGE):**
+  NPO 2e-5     -0.013   (least bad; +0.004 at lr 1e-5, ~neutral)
+  selected v1  -0.043
+  v3-ce        -0.048
+  all-token g4 -0.067   (WORST)
+Every subject negative: nothing tested resists relearning. And the ranking
+INVERTS the suppression-depth hypothesis: the deepest at-rest suppressor
+(all-token, leak 0.047) relearns FASTEST — 0.04 -> 0.89 ROUGE in 160 steps
+at lr 1e-5, ending 0.22 ABOVE the never-knew control. Margin-pinned weights
+apparently sit in a reflection of the original basin: one gradient step
+back. At lr 5e-5 all curves converge onto the control (attack saturates).
+Finding: at-rest suppression depth ANTI-correlates with relearn resistance.
+
+all_g4_s0 retrain reproduced the recorded cell (leak 0.047 vs 0.035, util
+0.477 vs 0.469, fq 0.0021 vs 0.0021 — nondeterminism-level drift, same
+character). Artifacts: t34_rrs.json, RRS.md, fig_relearn_all.

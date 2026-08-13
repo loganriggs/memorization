@@ -86,6 +86,23 @@ Pareto comparison (finding 13–14, fig_pareto_forget05, PARETO.md).
     seed spread our method showed near the admissibility threshold
     (finding 3). The noise is a property of KS-at-n=200, not of any method.
 
+16. **Utility and forget quality trade off through the retain anchor.**
+    Replacing the margin hinge with absolute log-prob restoration (v3-lppin)
+    fully repairs the utility deficit (0.578 vs reference 0.596; retain/prob
+    0.857 vs 0.87) but drops FQ to ~0.006 — restoring probability mass pulls
+    the whole model toward the full model, forget-set distribution included.
+    The two axes are coupled through the same anchor term. [t33; LOG]
+
+17. **At-rest suppression depth ANTI-correlates with relearn resistance.**
+    RRS (control-referenced relearn gap, min over lrs): NPO −0.013 >
+    selected −0.043 > v3-ce −0.048 > all-token deep suppressor −0.067. The
+    deepest suppressor (leak 0.047) relearns FASTEST — 0.04→0.89 ROUGE in
+    160 steps, finishing 0.22 above the never-knew control. "Suppress
+    harder to make it harder to relearn" is not just unsupported but
+    inverted; margin-pinned weights sit one step from the original basin.
+    Every method tested has RRS < 0 — relearn resistance remains an open
+    problem for the field, and RRS is the metric to target. [t34; RRS.md]
+
 ## Evaluator/protocol findings (reproducibility section)
 
 8. **A single trailing space in a prompt template costs 0.09 ROUGE** on
