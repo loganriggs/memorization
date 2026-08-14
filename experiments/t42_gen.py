@@ -16,12 +16,14 @@ Output: results/t42_<arm>.json (JSONL rows {question, answer, alternate}),
 drop-in for AltPO's QAwithAlternateDataset recipe.
 """
 import json
+import os
 import re
 import sys
 
 import torch
 
 sys.path.insert(0, ".")
+os.environ["T15_TOK_ID"] = "open-unlearning/tofu_Llama-3.2-1B-Instruct_full"
 import t15_tofu_metrics as t15  # noqa: E402  (llama3 template env set inside)
 
 DEVICE = "cuda"
