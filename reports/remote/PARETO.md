@@ -24,3 +24,5 @@
 | hybrid: NPO-forget + ours-retain | joint | **0.504** (0.088, 0.71, 0.71) | 0.589 | 0.241 |
 | hybrid: NPO-forget + ours-retain | seq·min | **0.0775** (0.11, 0.052, 0.068) | 0.574 | 0.342 |
 | hybrid: NPO-forget + ours-retain | seq·all | **0** (0, 0, 0) | 0.574 | 0.011 |
+| AltPO | 1e-5 | **0.194** (0.11, 0.33, 0.14) | 0.595 | 0.385 |
+| AltPO | 2e-5 | **0.184** (0.22, 0.22, 0.11) | 0.591 | 0.379 |

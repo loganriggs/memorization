@@ -85,6 +85,11 @@ def load_all():
             "joint": "t37_forget05_npolp_lr1e-05",
             "seq·min": "t37s_forget05_min_g4",
             "seq·all": "t37s_forget05_all_g4"})
+    if os.path.exists(f"{RR}/t39_newbaselines.jsonl"):
+        nb = rows("t39_newbaselines.jsonl")
+        curves["AltPO, lr"] = group(nb, {
+            "1e-5": "t39_forget05_altpo_lr1e-5",
+            "2e-5": "t39_forget05_altpo_lr2e-5"})
     return curves
 
 
@@ -96,6 +101,7 @@ STYLE = {  # curve -> (color, marker)
     "RMU, steer coeff": ("#e377c2", "P"),
     "SimNPO, γ": ("#8c564b", "D"),
     "hybrid: NPO-forget + ours-retain": ("#e6873c", "*"),
+    "AltPO, lr": ("#17becf", "X"),
 }
 
 
