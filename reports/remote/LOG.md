@@ -1760,3 +1760,20 @@ Logan's substitution program, three cells beyond AltPO:
   contrast arm.
 Both t42 arms train with AltPO's exact DPO recipe (only the alternate
 dataset differs), then eval+fq+relearn(2 lrs)+RRS. Queued t41 -> t42.
+
+## 2026-08-14 21:0x UTC — T42 COMPLETE: substitution structure verdict — both variants WORSE
+
+Substitution RRS ladder (headline min over lrs), now complete:
+  AltPO (plausible, 5 diverse independent)  -0.143
+  coherent (one consistent donor world)     -0.240   (fq 0, util 0.537)
+  far (absurd, maximally distant)           -0.293   (fq 0, util 0.574)
+Logan's both variants made durability WORSE, and both also fail at-rest FQ
+outright (0.0) where AltPO passes 6/6. Reading: ALL substitution is a
+shallow overlay; the further the overlay sits from the truth's distribution
+— one clean coherent attractor, or an absurd far-away one — the easier the
+truth resurges (and the more distinguishable the model at rest).
+Plausible-AND-diverse (AltPO's design) is load-bearing for both axes: it
+minimizes overlay distance and adds interference, yet still loses to
+suppression-based durability. Composition ladder unchanged: pin-on-NPO
+0.000 > pin-on-AltPO -0.009 >> any substitution alone.
+t42 checkpoints pruned (re-derivable; datasets + jsonls tracked).

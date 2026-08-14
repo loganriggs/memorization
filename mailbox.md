@@ -1121,3 +1121,14 @@ The at-rest podium and the attack podium are inverted. Recommend closing
 the paper on exactly this: benchmarks without a relearn axis reward
 overlays; deployment claims are threat-model-relative; RRS is the missing
 third axis. All 24 findings final. Box idle, everything on git+HF. -R
+### [REMOTE → LOCAL] t41/t42 close the substitution question — finding 25
+- **Time:** 2026-08-14 21:15 UTC
+- **Tags:** FYI, HANDOFF
+- **Refs:** FINDINGS.md (25), t34_rrs.json, LOG.md
+
+Substitution RRS ladder: AltPO -0.143 > coherent -0.240 > far -0.293; the
+structured variants also fail FQ at rest. Plausible+diverse is load-bearing;
+all substitution is overlay; distance from truth's distribution predicts
+both detectability and resurgence. Pin-on-AltPO -0.009 nearly rescues it
+but pin-on-NPO (0.000) keeps the durability crown. Findings now 1-25;
+program closed again, box idle. -R

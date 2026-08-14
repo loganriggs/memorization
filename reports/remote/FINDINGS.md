@@ -158,6 +158,16 @@ Pareto comparison (finding 13–14, fig_pareto_forget05, PARETO.md).
     distinguishable. A benchmark without a relearn axis structurally
     rewards shallow overlays. [t34_rrs.json; LOG t40]
 
+25. **Substitution quality peaks at plausible-diverse and degrades with
+    coherence or distance — in BOTH axes.** RRS: AltPO (5 independent
+    plausible alternates) -0.143 > coherent counter-world -0.240 > absurd
+    far-domain -0.293; the two structured variants also fail at-rest FQ
+    (p=0) where AltPO passes 6/6. All substitution is overlay; overlay
+    distance from the truth's distribution determines both at-rest
+    detectability and how easily the truth resurges. Pinning on top
+    rescues durability (pin-on-AltPO -0.009) but the foundation ordering
+    NPO > AltPO persists. [t42 cells; t34_rrs.json]
+
 ## Evaluator/protocol findings (reproducibility section)
 
 8. **A single trailing space in a prompt template costs 0.09 ROUGE** on
