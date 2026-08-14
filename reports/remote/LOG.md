@@ -1699,3 +1699,33 @@ declare: ATWU (arXiv 2606.06320, learned token-level importance — SOTA
 claims on TOFU+RWKU, conceptually adjacent to our token-level pin), UCD
 (contrastive decoding, inference-time), BLUR, FLAT (ICLR25), UIPE,
 DualOptim+. Running them faithfully = future work; noted to avoid strawmen.
+
+## 2026-08-14 12:0x UTC — T39 COMPLETE: AltPO joins the podium; seq-all is the FIRST RRS>=0 point
+
+All phases done, only PDU FATALs (known missing mandatory param; supplement
+running with their run.sh value 0.3).
+
+**Phase B verdict (18 default cells + AltPO):** GradDiff/WGA/SatImp/UNDIAL
+fq=0 every seed (barely-moved models, util 0.48-0.60); CEU util 0.000 every
+seed (default config lobotomy). **AltPO is the exception Logan suspected
+existed:** 6/6 per-seed FQ passes across BOTH lrs (1e-5: {.11,.33,.14};
+2e-5: {.22,.22,.11}), utility 0.590-0.597 (= reference), leakage AT the
+never-knew floor (0.37-0.40 — no over-suppression; it overwrites with
+plausible alternatives instead of suppressing). Most auditor-faithful
+standalone method measured. Amends finding 14: the corner is reachable by
+NPO, ours, and AltPO — the two mechanisms that work are reference-anchored
+suppression and alternative-overwriting.
+
+**Phase C (champion RRS) — the campaign's biggest single result:**
+  seq-all (all-token pin on tuned NPO): RRS +0.081 @ lr1e-5, 0.000 @ 5e-5
+  -> headline min 0.000. THE FIRST NON-NEGATIVE RRS OF ANY METHOD TESTED.
+  Standalone all-token was the WORST relearner (-0.067); on top of NPO the
+  same pin is the BEST. NPO reshapes the basin, THEN the pin deepens —
+  order of operations decides attack durability. Joint hybrid: -0.061
+  (inherits pin-like vulnerability); seq-min -0.035.
+
+**Phase D (RWKU hybrid):** forget-removed 71.1%, neighbor-kept 82.2%,
+adv-extract 33.6% — STRICTLY DOMINATES NPO (59.9/75.1/46.6) on all three
+axes on real knowledge. Standalone ours stays the deep option (86.5/55.8).
+
+fig_pareto regenerated with AltPO (cyan X); t34/t36 figures regenerated.

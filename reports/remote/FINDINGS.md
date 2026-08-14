@@ -128,6 +128,27 @@ Pareto comparison (finding 13–14, fig_pareto_forget05, PARETO.md).
     raises utility strictly monotonically (0.447 -> 0.578) while FQ wobbles
     inside the KS threshold-noise band with no trend. [t37 mix cells]
 
+21. **AltPO reaches the admissible corner at shipped defaults — by
+    overwriting, not suppressing.** 6/6 per-seed FQ passes across a 2x lr
+    grid at reference utility (0.594) and at-floor leakage. Training
+    plausible ALTERNATIVE answers in (positive feedback) rather than only
+    pushing true answers down is the third working mechanism, and the only
+    one whose generation behavior sits exactly at the never-knew floor.
+    Amends finding 14. [t39_newbaselines.jsonl]
+
+22. **Sequential composition produces the first relearn-resistant point.**
+    All-token pin applied ON TOP of tuned NPO: RRS +0.081 (lr 1e-5) /
+    0.000 (5e-5) — headline 0.0, vs negative for every other method. The
+    same pin standalone was the WORST relearner (-0.067). Order matters:
+    NPO first reshapes the basin, then the pin deepens without leaving a
+    one-step path back. Attack durability is a property of the TRAJECTORY,
+    not the endpoint loss. [t34_rrs.json; RRS.md]
+
+23. **The hybrid strictly dominates NPO on real-world knowledge.** RWKU:
+    71.1% forget-removal / 82.2% neighbor-kept / 33.6% adversarial
+    extraction vs NPO's 59.9 / 75.1 / 46.6 — better on all three axes.
+    [t35_rwku.jsonl; fig_rwku_pilot]
+
 ## Evaluator/protocol findings (reproducibility section)
 
 8. **A single trailing space in a prompt template costs 0.09 ROUGE** on
