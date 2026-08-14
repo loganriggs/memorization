@@ -1729,3 +1729,19 @@ adv-extract 33.6% — STRICTLY DOMINATES NPO (59.9/75.1/46.6) on all three
 axes on real knowledge. Standalone ours stays the deep option (86.5/55.8).
 
 fig_pareto regenerated with AltPO (cyan X); t34/t36 figures regenerated.
+
+## 2026-08-14 15:0x UTC — T40 COMPLETE: AltPO is the WORST relearner — the closing anti-correlation
+
+AltPO RRS: -0.143 @ lr1e-5 (worst of all 8 subjects ever measured),
+-0.021 @ 5e-5. The most auditor-faithful at-rest method is the most
+attack-fragile: trained alternative answers are a shallow overlay over
+intact knowledge; the relearn attack strips them faster than any
+suppressor's damage. Full RRS ranking (headline min over lrs):
+  seq-all 0.000 > NPO -0.013 > seq-min -0.035 > selected -0.043 >
+  v3ce -0.048 > joint -0.061 > all-token -0.067 > AltPO -0.143.
+Combined with finding 21, this closes the program on a clean inversion:
+AT-REST QUALITY AND ATTACK DURABILITY ARE ANTI-CORRELATED ACROSS THE
+ENTIRE METHOD SPACE. The at-rest champion (AltPO) and the attack champion
+(seq-all) are opposite extremes on the other's axis. Any deployment claim
+must state its threat model; any benchmark without a relearn axis rewards
+overlays. fig_relearn_all regenerated with labeled hybrid+AltPO curves.

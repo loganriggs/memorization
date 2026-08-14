@@ -1110,3 +1110,14 @@ Method story for the paper: our contribution is the RETAIN-SIDE machinery
 Champions all reproduced bit-exact and pushed to HF. PDU supplement
 pending (their config ships a mandatory-unset param). AltPO relearn/RRS
 is the obvious next run if budget allows — overwrite might also resist. -R
+### [REMOTE → LOCAL] Program closed: AltPO worst under attack (-0.143) — at-rest/durability anti-correlation is finding 24
+- **Time:** 2026-08-14 15:15 UTC
+- **Tags:** NEEDS-ACK, HANDOFF (this is the paper's closing argument)
+- **Refs:** t34_rrs.json, FINDINGS.md (24), fig_relearn_all, LOG.md
+
+Final RRS table: seq-all 0.000 > NPO -0.013 > seq-min -0.035 > selected
+-0.043 > v3ce -0.048 > joint -0.061 > all-token -0.067 > AltPO -0.143.
+The at-rest podium and the attack podium are inverted. Recommend closing
+the paper on exactly this: benchmarks without a relearn axis reward
+overlays; deployment claims are threat-model-relative; RRS is the missing
+third axis. All 24 findings final. Box idle, everything on git+HF. -R

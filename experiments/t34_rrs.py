@@ -34,6 +34,10 @@ LABELS = {
     "t25_npo2e5_s0": "NPO tuned lr 2e-5",
     "t25_v3ce_s0": "ours v3-CE",
     "t25_v3lppin_s0": "ours v3-logprob-pin",
+    "t25_hybrid_joint_s0": "hybrid joint",
+    "t25_hybrid_seqall_s0": "hybrid seq-all (pin on NPO)",
+    "t25_hybrid_seqmin_s0": "hybrid seq-min",
+    "t25_altpo_s0": "AltPO",
     "t25_control_retain95": "never-knew control",
 }
 
@@ -80,7 +84,9 @@ def rrs(curves):
 def fig(curves):
     lrs = sorted({lr for (_, lr) in curves})
     colors = {"t25_selected_min_g4": "#d62728", "t25_allg4_s0": "#1f77b4",
-              "t25_npo2e5_s0": "#9467bd", "t25_v3ce_s0": "#e6873c",
+              "t25_npo2e5_s0": "#9467bd", "t25_v3ce_s0": "#e6873c", "t25_hybrid_joint_s0": "#ff9f1c",
+              "t25_hybrid_seqall_s0": "#0a9396", "t25_hybrid_seqmin_s0": "#94d2bd",
+              "t25_altpo_s0": "#17becf",
               "t25_v3lppin_s0": "#8c564b", CONTROL: "#555555"}
     f, axes = plt.subplots(1, len(lrs), figsize=(6.4 * len(lrs), 4.9),
                            dpi=150, squeeze=False)

@@ -149,6 +149,15 @@ Pareto comparison (finding 13–14, fig_pareto_forget05, PARETO.md).
     extraction vs NPO's 59.9 / 75.1 / 46.6 — better on all three axes.
     [t35_rwku.jsonl; fig_rwku_pilot]
 
+24. **At-rest forget quality and attack durability are anti-correlated
+    across the entire method space.** The at-rest champion (AltPO: 6/6 FQ
+    passes, reference utility) has the worst RRS ever measured (-0.143);
+    the attack champion (seq-all pin-on-NPO: RRS >= 0) has FQ 0.
+    Overwriting looks perfect at rest and evaporates fastest under
+    relearning; deep suppression survives longest but is maximally
+    distinguishable. A benchmark without a relearn axis structurally
+    rewards shallow overlays. [t34_rrs.json; LOG t40]
+
 ## Evaluator/protocol findings (reproducibility section)
 
 8. **A single trailing space in a prompt template costs 0.09 ROUGE** on
