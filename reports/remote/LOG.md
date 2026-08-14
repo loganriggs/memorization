@@ -1745,3 +1745,18 @@ ENTIRE METHOD SPACE. The at-rest champion (AltPO) and the attack champion
 (seq-all) are opposite extremes on the other's axis. Any deployment claim
 must state its threat model; any benchmark without a relearn axis rewards
 overlays. fig_relearn_all regenerated with labeled hybrid+AltPO curves.
+
+## 2026-08-14 17:0x UTC — t41 (pin-on-AltPO) running; t42 (coherent/far substitution) queued (Logan)
+
+Logan's substitution program, three cells beyond AltPO:
+- t41: all-token pin g4 on the AltPO checkpoint — does a reinforced
+  substitute block the relearn path better than pin-on-NPO (RRS 0.0)?
+- t42-coherent: donor-profile swap — each forget author gets a RETAINED
+  author's complete real profile (name-swapped, answers extracted from the
+  profile in context). Logan's hypothesis: counter-facts that all point at
+  one consistent world are self-reinforcing and harder to peel away.
+- t42-far: maximally dissimilar/absurd substitutes (different domain,
+  different continent, contradicts everything) — the high-divergence
+  contrast arm.
+Both t42 arms train with AltPO's exact DPO recipe (only the alternate
+dataset differs), then eval+fq+relearn(2 lrs)+RRS. Queued t41 -> t42.

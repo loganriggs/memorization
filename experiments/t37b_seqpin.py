@@ -34,8 +34,11 @@ def stage_train():
     import datasets
     scope, steps, seed = sys.argv[2], int(sys.argv[3]), int(sys.argv[4])
     assert scope in ("min", "all")
-    init = f"results/t23_forget05_npo_lr2e-05_s{seed}"
-    tag = f"t37s_forget05_{scope}_g4_s{seed}"
+    # T37B_INIT/T37B_TAG env overrides let t41 reuse this trainer with a
+    # different starting checkpoint (pin-on-AltPO) without touching t37s dirs
+    init = os.environ.get("T37B_INIT",
+                          f"results/t23_forget05_npo_lr2e-05_s{seed}")
+    tag = os.environ.get("T37B_TAG", f"t37s_forget05_{scope}_g4_s{seed}")
     outdir = f"results/{tag}"
 
     tok = t20.get_tok()
