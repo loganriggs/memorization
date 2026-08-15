@@ -1817,3 +1817,17 @@ which the attack must retrace (cos>0). seq-all = body displacement + an
 embedding wall: the two orthogonal defenses close both attack routes —
 neither retraceable (cos~0) nor bypassable (body no longer intact).
 Composition durability now has a measured geometric explanation.
+
+## 2026-08-15 23:0x UTC — T44H2: cross-splits — hybrid is the only 3-split method; NPO fails the n-transfer
+
+t44_cross_splits.jsonl (3 seeds each, sample-budget-matched steps):
+  NPO 2e-5:   f01 {0.405 x3} PASS / f10 {0.002,0.016,0.03} FAIL 3/3
+  joint hyb:  f01 {0.054,0.919,0.766} PASS 3/3 / f10 {0.016,0.700,0.367}
+              2/3 pass, mean 0.36 — the ONLY method admissible across all
+              three splits (f05 3/3 from t37), util 0.576-0.582 everywhere.
+  seq-all:    FQ ~0 both splits (expected; content-removal/durability tool),
+              util 0.579-0.589.
+Findings: (27) tuned NPO's forget05-optimal lr FAILS at n=400 — hyperparam
+transfer across sample sizes is as fragile as across lrs (extends finding
+13); the joint hybrid's retain-side anchor stabilizes the distribution
+match exactly where KS power grows. RWKU-50 (phase H3) now running.

@@ -178,6 +178,14 @@ Pareto comparison (finding 13–14, fig_pareto_forget05, PARETO.md).
     the geometric reason finding 22's composition works.
     [t43_mechanism.json; LOG t43]
 
+27. **The joint hybrid is the only method admissible on all three splits;
+    tuned NPO fails the sample-size transfer.** forget01/05/10 per-seed FQ:
+    hybrid passes 3/3, 3/3, 2/3 (mean 0.36) at utility 0.576-0.589; NPO's
+    forget05-tuned lr collapses at n=400 ({0.002-0.03}). Config fragility
+    extends from learning rates (finding 13) to sample sizes; the
+    logprob-pin+KL retain anchor is what stabilizes the forget-side
+    distribution match as KS power grows. [t44_cross_splits.jsonl]
+
 ## Evaluator/protocol findings (reproducibility section)
 
 8. **A single trailing space in a prompt template costs 0.09 ROUGE** on
