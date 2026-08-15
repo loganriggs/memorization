@@ -36,15 +36,15 @@ def stage_train():
     assert scope in ("min", "all")
     # T37B_INIT/T37B_TAG env overrides let t41 reuse this trainer with a
     # different starting checkpoint (pin-on-AltPO) without touching t37s dirs
+    split = os.environ.get("T37B_SPLIT", "forget05")
     init = os.environ.get("T37B_INIT",
-                          f"results/t23_forget05_npo_lr2e-05_s{seed}")
-    tag = os.environ.get("T37B_TAG", f"t37s_forget05_{scope}_g4_s{seed}")
+                          f"results/t23_{split}_npo_lr2e-05_s{seed}")
+    tag = os.environ.get("T37B_TAG", f"t37s_{split}_{scope}_g4_s{seed}")
     outdir = f"results/{tag}"
 
     tok = t20.get_tok()
-    forget = list(datasets.load_dataset("locuslab/TOFU", "forget05",
-                                        split="train"))
-    retain = list(datasets.load_dataset("locuslab/TOFU", "retain95",
+    forget = list(datasets.load_dataset("locuslab/TOFU", split, split="train"))
+    retain = list(datasets.load_dataset("locuslab/TOFU", t20.PAIR[split],
                                         split="train"))[:RETAIN_CAP]
 
     torch.manual_seed(seed)

@@ -173,7 +173,9 @@ def stage_basecheck():
 
 
 def pilot_subjects():
-    return [r["subject"] for r in json.load(open(TARGETS_F))["pilot"]]
+    d = json.load(open(TARGETS_F))
+    n = int(os.environ.get("T35_TOPN", "10"))
+    return [r["subject"] for r in d["ranking"][:n]]
 
 
 def stage_train():

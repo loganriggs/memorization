@@ -39,19 +39,20 @@ def stage_train():
     import datasets
     kind = sys.argv[2]
     assert kind in ("mix", "npolp")
+    split = os.environ.get("T37_SPLIT", "forget05")
+    pair = t20.PAIR[split]
     if kind == "mix":
         lam, seed = float(sys.argv[3]), int(sys.argv[4])
         lr = 1e-5
-        tag = f"t37_forget05_mix{lam:g}_s{seed}"
+        tag = f"t37_{split}_mix{lam:g}_s{seed}"
     else:
         lr, seed = float(sys.argv[3]), int(sys.argv[4])
-        tag = f"t37_forget05_npolp_lr{lr:g}_s{seed}"
+        tag = f"t37_{split}_npolp_lr{lr:g}_s{seed}"
     outdir = f"results/{tag}"
 
     tok = t20.get_tok()
-    forget = list(datasets.load_dataset("locuslab/TOFU", "forget05",
-                                        split="train"))
-    retain = list(datasets.load_dataset("locuslab/TOFU", "retain95",
+    forget = list(datasets.load_dataset("locuslab/TOFU", split, split="train"))
+    retain = list(datasets.load_dataset("locuslab/TOFU", pair,
                                         split="train"))[:RETAIN_CAP]
 
     torch.manual_seed(seed)

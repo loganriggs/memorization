@@ -1777,3 +1777,18 @@ minimizes overlay distance and adds interference, yet still loses to
 suppression-based durability. Composition ladder unchanged: pin-on-NPO
 0.000 > pin-on-AltPO -0.009 >> any substitution alone.
 t42 checkpoints pruned (re-derivable; datasets + jsonls tracked).
+
+## 2026-08-15 16:0x UTC — t44 MASTER CHAIN LAUNCHED (Logan: mechanism + items 1-3; box stays)
+
+Phases (t44_run.sh, marker T44 COMPLETE, ~1.5 days):
+M.  t43 mechanism diagnostic: per-layer ||dtheta|| vs full model for
+    {NPO, standalone pin, seq-all, AltPO} + 10-step relearn-direction
+    cosine vs the walk-back direction. Tests the "displacement vs gate"
+    story directly. Subjects restored (seq-all re-fetched from HF; AltPO
+    deterministic retrain).
+H1. seq-all RRS seeds 1-2 (2 lrs) + t34 rerun — hardening finding 22.
+H2. Cross-splits forget01/forget10 x 3 seeds: NPO 2e-5 (their trainer),
+    joint hybrid (sample-budget-matched steps 100/1000), seq-all pin
+    (amendment-4 transfer 20/200). Summary: t44_cross_splits.jsonl.
+H3. RWKU at 50 targets x {ga, npo, ours, hybrid} + 40 new baseevals
+    (T35_TOPN=50), commit every 10 targets.
