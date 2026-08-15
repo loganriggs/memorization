@@ -168,6 +168,16 @@ Pareto comparison (finding 13–14, fig_pareto_forget05, PARETO.md).
     rescues durability (pin-on-AltPO -0.009) but the foundation ordering
     NPO > AltPO persists. [t42 cells; t34_rrs.json]
 
+26. **Measured mechanism: the pin is an embedding wall; NPO displaces the
+    body; durability needs both.** Displacement anatomy: the pin's delta is
+    large (||d||=3.9) with 70% of its squared mass in token embeddings and
+    an intact transformer body — relearning reroutes around it (direction
+    cosine ~0) in ~10 steps. NPO's delta is body-distributed (embed 2%),
+    and its relearn direction partially retraces the displacement
+    (cos +0.13). seq-all combines both: not retraceable, not bypassable —
+    the geometric reason finding 22's composition works.
+    [t43_mechanism.json; LOG t43]
+
 ## Evaluator/protocol findings (reproducibility section)
 
 8. **A single trailing space in a prompt template costs 0.09 ROUGE** on

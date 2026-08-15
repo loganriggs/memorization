@@ -1792,3 +1792,28 @@ H2. Cross-splits forget01/forget10 x 3 seeds: NPO 2e-5 (their trainer),
     (amendment-4 transfer 20/200). Summary: t44_cross_splits.jsonl.
 H3. RWKU at 50 targets x {ga, npo, ours, hybrid} + 40 new baseevals
     (T35_TOPN=50), commit every 10 targets.
+
+## 2026-08-15 18:0x UTC — t43 MECHANISM RESULTS: the gate lives in the EMBEDDINGS
+
+(Deviation note: AltPO retrain initially wrote into ref_repo/ — $(pwd)
+expanded inside the cd-subshell; moved and t43 rerun, all 4 subjects in.)
+
+Per-layer displacement anatomy (||dtheta|| vs full model, frac of squared
+mass) + 10-step relearn-direction cosine:
+  NPO 2e-5:   ||d||=1.61, DISTRIBUTED through the body (embed 2%), and the
+              relearn direction aligns with walking back (cos +0.13, the
+              largest) — the attack must partially RETRACE the displacement.
+  AltPO:      ||d||=1.53, body-distributed (embed 7%), cos +0.10 — similar
+              geometry to NPO, but shallower content (overlay).
+  pin alone:  ||d||=3.86 — BIGGER than NPO, and 70% of squared mass in the
+              TOKEN EMBEDDINGS. cos -0.04: relearning does NOT reverse it —
+              it reroutes AROUND the embedding damage using the intact body.
+  seq-all:    ||d||=4.40, embed 65%, cos ~0 vs both full and NPO stages.
+REVISED MECHANISM (corrects the "small gate" guess): the pin is not small —
+it is an embedding-level WALL (Adafactor piles displacement into the
+answer-token embedding rows), while the transformer body stays intact,
+which is why relearning bypasses it in ~10 steps. NPO displaces the BODY,
+which the attack must retrace (cos>0). seq-all = body displacement + an
+embedding wall: the two orthogonal defenses close both attack routes —
+neither retraceable (cos~0) nor bypassable (body no longer intact).
+Composition durability now has a measured geometric explanation.

@@ -26,5 +26,14 @@
   },
   "cos_relearn_vs_back_to_full": 0.0034,
   "cos_relearn_vs_back_to_npo": 0.0013
+ },
+ "altpo": {
+  "anatomy": {
+   "total_l2": 1.527,
+   "frac_sq_last4_layers": 0.222,
+   "frac_sq_embed": 0.073,
+   "frac_sq_head_norm": 0.0
+  },
+  "cos_relearn_vs_back_to_full": 0.1003
  }
 }
