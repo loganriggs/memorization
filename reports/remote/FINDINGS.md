@@ -144,10 +144,16 @@ Pareto comparison (finding 13–14, fig_pareto_forget05, PARETO.md).
     one-step path back. Attack durability is a property of the TRAJECTORY,
     not the endpoint loss. [t34_rrs.json; RRS.md]
 
-23. **The hybrid strictly dominates NPO on real-world knowledge.** RWKU:
-    71.1% forget-removal / 82.2% neighbor-kept / 33.6% adversarial
-    extraction vs NPO's 59.9 / 75.1 / 46.6 — better on all three axes.
-    [t35_rwku.jsonl; fig_rwku_pilot]
+23. **[AMENDED at n=50] The hybrid is the best collateral-preservation
+    point on real-world knowledge, not a strict dominator.** At 10 targets
+    it beat NPO on all three axes; at 50 targets (means±SE): hybrid 58.9±3.0
+    removed / 83.1±3.6 neighbor-kept / 44.0±3.2 adv-extract vs NPO 62.9 /
+    67.2 / 44.7 — decisively better neighbor preservation (>3 SE), equal
+    adversarial robustness, slightly less raw removal. The pilot's strict
+    dominance was a small-n artifact — the same overclaim mechanism our
+    seed-noise findings document. Ours at n=50: deepest functional removal
+    (76.5) with best adversarial resistance among functional methods
+    (32.4). [t35_rwku.jsonl n=50; fig_rwku_pilot]
 
 24. **At-rest forget quality and attack durability are anti-correlated
     across the entire method space.** The at-rest champion (AltPO: 6/6 FQ

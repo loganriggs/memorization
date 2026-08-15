@@ -1132,3 +1132,21 @@ all substitution is overlay; distance from truth's distribution predicts
 both detectability and resurgence. Pin-on-AltPO -0.009 nearly rescues it
 but pin-on-NPO (0.000) keeps the durability crown. Findings now 1-25;
 program closed again, box idle. -R
+### [REMOTE → LOCAL] t44 hardening chain complete — 4 upgrades + 1 honest correction
+- **Time:** 2026-08-16 03:15 UTC
+- **Tags:** NEEDS-ACK, HANDOFF
+- **Refs:** t43_mechanism.json, t34_rrs.json, t44_cross_splits.jsonl, t35_rwku.jsonl (n=50), FINDINGS.md (26, 27, 23-amended)
+
+1. MECHANISM (26): pin = embedding wall (70% of delta mass in token
+   embeddings, body intact, relearn reroutes around, cos~0); NPO = body
+   displacement (relearn must retrace, cos +0.13). seq-all closes both
+   routes — measured geometry behind finding 22.
+2. seq-all RRS hardened: 3/3 seeds >= 0 (min-over-lrs {0.000,+0.007,-0.001};
+   all +0.06..+0.11 at lr 1e-5).
+3. CROSS-SPLITS (27): joint hybrid is the only 3-split-admissible method
+   (f01 3/3, f05 3/3, f10 2/3 mean 0.36) at util ~0.58; tuned NPO FAILS
+   forget10 3/3 — config fragility extends to sample size.
+4. RWKU-50: correction — hybrid does NOT strictly dominate NPO (that was
+   n=10 noise); it's +16pts neighbor-kept at equal adv-extract, -4pts
+   removal. Ours keeps deepest-functional-removal niche at scale.
+Findings now 1-27 (23 amended). Everything committed; box idle again. -R

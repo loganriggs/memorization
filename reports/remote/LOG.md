@@ -1831,3 +1831,21 @@ Findings: (27) tuned NPO's forget05-optimal lr FAILS at n=400 — hyperparam
 transfer across sample sizes is as fragile as across lrs (extends finding
 13); the joint hybrid's retain-side anchor stabilizes the distribution
 match exactly where KS power grows. RWKU-50 (phase H3) now running.
+
+## 2026-08-16 03:0x UTC — T44 COMPLETE: RWKU-50 — pilot's "strict dominance" was a small-n artifact
+
+50 targets x 4 methods, zero failures (423 stage-exits). Base-normalized
+means ± SE:
+  ga      78.9±4.0 removed / 26.9±4.9 neighbor-kept / 25.4 adv-extract
+  npo     62.9±2.3 / 67.2±3.4 / 44.7±2.9
+  ours    76.5±2.9 / 61.6±3.9 / 32.4±3.8
+  hybrid  58.9±3.0 / 83.1±3.6 / 44.0±3.2
+CORRECTION to finding 23: at n=10 the hybrid "strictly dominated" NPO on
+all three axes; at n=50 it does NOT — it is a tradeoff point: +16pts
+neighbor preservation (>3 SE, decisive) at ~equal adversarial extraction
+and ~4pts less raw removal (~1.3 SE). Our own seed-noise findings predicted
+exactly this class of small-n overclaim; the correction is the finding.
+Scale-stable picture: ours = deepest functional removal with best
+adversarial resistance among functional methods; hybrid = best collateral
+preservation; GA at n=50 is less uniformly lobotomized than the pilot
+suggested (26.9 kept, huge variance). fig_rwku_pilot regenerated at n=50.
