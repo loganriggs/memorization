@@ -16,6 +16,8 @@ RRS = mean_t [control_rouge(t) − subject_rouge(t)] over relearn steps; control
 | t25_altpo_pin_s0 | 1e-05 | +0.030 | -0.076 |
 | t25_coherent_s0 | 1e-05 | -0.240 | -0.431 |
 | t25_far_s0 | 1e-05 | -0.293 | -0.516 |
+| t25_hybrid_seqall_s1 | 1e-05 | +0.059 | +0.010 |
+| t25_hybrid_seqall_s2 | 1e-05 | +0.112 | +0.044 |
 | ours min-token γ4 (selected) | 5e-05 | -0.014 | -0.078 |
 | ours all-token γ4 (deep suppressor) | 5e-05 | -0.018 | -0.111 |
 | NPO tuned lr 2e-5 | 5e-05 | -0.013 | -0.071 |
@@ -27,5 +29,7 @@ RRS = mean_t [control_rouge(t) − subject_rouge(t)] over relearn steps; control
 | t25_altpo_pin_s0 | 5e-05 | -0.009 | -0.084 |
 | t25_coherent_s0 | 5e-05 | -0.013 | -0.110 |
 | t25_far_s0 | 5e-05 | -0.021 | -0.096 |
+| t25_hybrid_seqall_s1 | 5e-05 | +0.007 | -0.059 |
+| t25_hybrid_seqall_s2 | 5e-05 | -0.001 | -0.075 |
 
-**Headline (min over lrs):** ours min-token γ4 (selected): -0.043, ours all-token γ4 (deep suppressor): -0.067, NPO tuned lr 2e-5: -0.013, ours v3-CE: -0.048, hybrid joint: -0.061, hybrid seq-all (pin on NPO): +0.000, hybrid seq-min: -0.035, AltPO: -0.143, t25_altpo_pin_s0: -0.009, t25_coherent_s0: -0.240, t25_far_s0: -0.293
+**Headline (min over lrs):** ours min-token γ4 (selected): -0.043, ours all-token γ4 (deep suppressor): -0.067, NPO tuned lr 2e-5: -0.013, ours v3-CE: -0.048, hybrid joint: -0.061, hybrid seq-all (pin on NPO): +0.000, hybrid seq-min: -0.035, AltPO: -0.143, t25_altpo_pin_s0: -0.009, t25_coherent_s0: -0.240, t25_far_s0: -0.293, t25_hybrid_seqall_s1: +0.007, t25_hybrid_seqall_s2: -0.001
