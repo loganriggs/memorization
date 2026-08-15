@@ -1849,3 +1849,11 @@ Scale-stable picture: ours = deepest functional removal with best
 adversarial resistance among functional methods; hybrid = best collateral
 preservation; GA at n=50 is less uniformly lobotomized than the pilot
 suggested (26.9 kept, huge variance). fig_rwku_pilot regenerated at n=50.
+
+## 2026-08-16 04:3x UTC — T45: headline-split HF backfill complete — full coverage
+
+forget01/05/10 selected-config checkpoints now 3/3 seeds each on HF (the
+3 missing cells still had local weights — janitor only prunes HF-verified —
+so this was push-only). Every headline number now maps to a public
+checkpoint; non-selected grid cells remain recipe+determinism-reproducible
+by design. Repo/HF state final.
