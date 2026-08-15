@@ -1,0 +1,30 @@
+{
+ "npo_2e-5": {
+  "anatomy": {
+   "total_l2": 1.606,
+   "frac_sq_last4_layers": 0.206,
+   "frac_sq_embed": 0.023,
+   "frac_sq_head_norm": 0.0
+  },
+  "cos_relearn_vs_back_to_full": 0.1291
+ },
+ "pin_standalone": {
+  "anatomy": {
+   "total_l2": 3.856,
+   "frac_sq_last4_layers": 0.074,
+   "frac_sq_embed": 0.7,
+   "frac_sq_head_norm": 0.0
+  },
+  "cos_relearn_vs_back_to_full": -0.0357
+ },
+ "seq_all": {
+  "anatomy": {
+   "total_l2": 4.401,
+   "frac_sq_last4_layers": 0.079,
+   "frac_sq_embed": 0.65,
+   "frac_sq_head_norm": 0.0
+  },
+  "cos_relearn_vs_back_to_full": 0.0034,
+  "cos_relearn_vs_back_to_npo": 0.0013
+ }
+}
